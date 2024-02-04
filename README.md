@@ -1,59 +1,21 @@
 <h1 align="center">Hi, I'm Wiktoria 💕</h1>
-<p align="center">
-  <a href="https://github.com/yourusername"><img src="your-github-avatar-link" alt="avatar" width="100" /></a>
-</p>
 <p align="center">I'm a passionate programmer with interests in music, noir movies, and art. I love to create and learn new technologies, especially in the field of web development and data science.</p>
-<div style="display:flex; justify-content: space-around; flex-wrap: wrap;">
-  <div style="flex: 1; min-width: 250px; margin: 10px;">
-    <h4 align="left">Programming Languages:</h4>
-    <p align="left">
-      <a href="https://www.python.org" target="_blank" rel="noreferrer">
-        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="40" height="40"/>
-      </a>
-      <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer">
-        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" alt="javascript" width="40" height="40"/>
-      </a>
-    </p>
-  </div>
-  
-  <div style="flex: 1; min-width: 250px; margin: 10px;">
-    <h4 align="left">Frameworks:</h4>
-    <p align="left">
-      <a href="https://www.djangoproject.com/" target="_blank" rel="noreferrer">
-        <img src="https://cdn.worldvectorlogo.com/logos/django.svg" alt="django" width="40" height="40"/>
-      </a>
-      <a href="https://reactjs.org/" target="_blank" rel="noreferrer">
-        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original-wordmark.svg" alt="react" width="40" height="40"/>
-      </a>
-      <a href="https://flask.palletsprojects.com/" target="_blank" rel="noreferrer">
-        <img src="https://www.vectorlogo.zone/logos/pocoo_flask/pocoo_flask-icon.svg" alt="flask" width="40" height="40"/>
-      </a>
-    </p>
-  </div>
-  
-  <div style="flex: 1; min-width: 250px; margin: 10px;">
-    <h4 align="left">AI/ML:</h4>
-    <p align="left">
-      <a href="https://pandas.pydata.org/" target="_blank" rel="noreferrer">
-        <img src="https://raw.githubusercontent.com/devicons/devicon/2ae2a900d2f041da66e950e4d48052658d850630/icons/pandas/pandas-original.svg" alt="pandas" width="40" height="40"/>
-      </a>
-      <a href="https://scikit-learn.org/" target="_blank" rel="noreferrer">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Scikit_learn_logo_small.svg" alt="scikit_learn" width="40" height="40"/>
-      </a>
-    </p>
-  </div>
 
-  <!-- Repeat the block below for each category you want to include -->
-  
-  <div style="flex: 1; min-width: 250px; margin: 10px;">
-    <h4 align="left">DevOps:</h4>
-    <p align="left">
-      <a href="https://www.docker.com/" target="_blank" rel="noreferrer">
-        <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original-wordmark.svg" alt="docker" width="40" height="40"/>
-      </a>
-      <a href="https://cloud.google.com" target="_blank" rel="noreferrer">
-        <img src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" alt="gcp" width="40" height="40"/>
-      </a>
-      <a href="https://www.gnu.org/software/bash/" target="_blank" rel="noreferrer">
-        <img src="https://www.vectorlogo.zone/logos/gnu_bash/gnu_bash-icon.svg" alt="bash" width="40" height="40"/>
-      </a>
+<h3 align="center" style="color: #c9a6c9;"><b>My Tech Skills</b></h3>
+
+<p align="center">
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/PYTHON-%23D8BFD8?style=for-the-badge&logo=python&logoColor=%23000000" alt="Python"></a>
+  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"><img src="https://img.shields.io/badge/JAVASCRIPT-%23D8BFD8?style=for-the-badge&logo=JAVASCRIPT&logoColor=%23000000" alt="JavaScript"></a>
+  <a href="https://www.djangoproject.com/"><img src="https://img.shields.io/badge/DJANGO-%23D8BFD8?style=for-the-badge&logo=DJANGO&logoColor=%23000000" alt="Django"></a>
+</p>
+<p align="center">
+  <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/REACT-%23D8BFD8?style=for-the-badge&logo=REACT&logoColor=%23000000" alt="React"></a>
+  <a href="https://flask.palletsprojects.com/"><img src="https://img.shields.io/badge/FLASK-%23D8BFD8?style=for-the-badge&logo=FLASK&logoColor=%23000000" alt="Flask"></a>
+  <a href="https://pandas.pydata.org/"><img src="https://img.shields.io/badge/PANDAS-%23D8BFD8?style=for-the-badge&logo=PANDAS&logoColor=%23000000" alt="Pandas"></a>
+</p>
+<p align="center">
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/DOCKER-%23D8BFD8?style=for-the-badge&logo=DOCKER&logoColor=%23000000" alt="Docker"></a>
+  <a href="https://www.gnu.org/software/bash/"><img src="https://img.shields.io/badge/BASH-%23D8BFD8?style=for-the-badge&logo=GNUBASH&logoColor=%23000000" alt="GNU Bash"></a>
+  <a href="https://git-scm.com/"><img src="https://img.shields.io/badge/GIT-%23D8BFD86?style=for-the-badge&logo=GIT&logoColor=%23000000" alt="Git"></a>
+  <a href="https://www.linux.org/"><img src="https://img.shields.io/badge/LINUX-%23D8BFD8?style=for-the-badge&logo=LINUX&logoColor=%23000000" alt="Linux"></a>
+</p>
