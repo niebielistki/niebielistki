@@ -4,7 +4,7 @@ In collaboration with @mil0sc - privately my boyfriend and coding partner - we d
 My passions are music (including music programming), watching good cinema, reading books and art.
 I cherish working in my plant-filled apartment, where ideas blossom. ♡ </p>
 
-<h4 align="center" style="color: #c9a6c9;"><b>MY TECH SKILLS</b></h4>
+<h4 align="center" style="color: #c9a6c9;"><b>MY TECH SKILLS:</b></h4>
 
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/PYTHON-%23D8BFD8?style=for-the-badge&logo=python&logoColor=%23000000" alt="Python"></a>
@@ -21,4 +21,6 @@ I cherish working in my plant-filled apartment, where ideas blossom. ♡ </p>
   <a href="https://www.gnu.org/software/bash/"><img src="https://img.shields.io/badge/BASH-%23D8BFD8?style=for-the-badge&logo=GNUBASH&logoColor=%23000000" alt="GNU Bash"></a>
   <a href="https://git-scm.com/"><img src="https://img.shields.io/badge/GIT-%23D8BFD8?style=for-the-badge&logo=GIT&logoColor=%23000000" alt="Git"></a>
   <a href="https://www.linux.org/"><img src="https://img.shields.io/badge/LINUX-%23D8BFD8?style=for-the-badge&logo=LINUX&logoColor=%23000000" alt="Linux"></a>
+</p>
+<p align="center"> I'm working on <b>macOS</b> system. </p>
 </p>
