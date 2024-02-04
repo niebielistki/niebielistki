@@ -1,5 +1,8 @@
 <h1 align="center">Hi, I'm Wiktoria ♡ </h1>
-<p align="center">I'm a passionate programmer with interests in music, noir movies, and art. I love to create and learn new technologies, especially in the field of web development and data science.</p>
+<p align="center"> As a self-taught and passionate beginner programmer from Poland, I am keenly exploring new realms of knowledge and diligently working to hone my skills, with a particular interest in <b>backend development</b>.
+In collaboration with @mil0sc - privately my boyfriend and coding partner - we delve into coding, learning how to collaborate on software development, sharing knowledge and inspiration every day. <br><br>
+My passions are music (including music programming), watching good cinema, reading books and art.
+I cherish working in my plant-filled apartment, where ideas blossom. ♡ </p>
 
 <h4 align="center" style="color: #c9a6c9;"><b>MY TECH SKILLS</b></h4>
 
