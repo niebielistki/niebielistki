@@ -16,6 +16,6 @@
 <p align="center">
   <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/DOCKER-%23D8BFD8?style=for-the-badge&logo=DOCKER&logoColor=%23000000" alt="Docker"></a>
   <a href="https://www.gnu.org/software/bash/"><img src="https://img.shields.io/badge/BASH-%23D8BFD8?style=for-the-badge&logo=GNUBASH&logoColor=%23000000" alt="GNU Bash"></a>
-  <a href="https://git-scm.com/"><img src="https://img.shields.io/badge/GIT-%23D8BFD86?style=for-the-badge&logo=GIT&logoColor=%23000000" alt="Git"></a>
+  <a href="https://git-scm.com/"><img src="https://img.shields.io/badge/GIT-%23D8BFD8?style=for-the-badge&logo=GIT&logoColor=%23000000" alt="Git"></a>
   <a href="https://www.linux.org/"><img src="https://img.shields.io/badge/LINUX-%23D8BFD8?style=for-the-badge&logo=LINUX&logoColor=%23000000" alt="Linux"></a>
 </p>
