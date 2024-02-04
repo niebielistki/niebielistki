@@ -1,7 +1,7 @@
-<h1 align="center">Hi, I'm Wiktoria ♡ ♡ </h1>
+<h1 align="center">Hi, I'm Wiktoria ♡ </h1>
 <p align="center">I'm a passionate programmer with interests in music, noir movies, and art. I love to create and learn new technologies, especially in the field of web development and data science.</p>
 
-<h3 align="center" style="color: #c9a6c9;"><b>My Tech Skills</b></h3>
+<h4 align="center" style="color: #c9a6c9;"><b>MY TECH SKILLS</b></h4>
 
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/PYTHON-%23D8BFD8?style=for-the-badge&logo=python&logoColor=%23000000" alt="Python"></a>
