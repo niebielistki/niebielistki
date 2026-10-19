@@ -9,8 +9,10 @@ Użycie:
 Co robi:
   1. Rozpakowuje zip hasłem CVM2026 (albo bierze już rozpakowany folder).
   2. Rozpoznaje pliki: ten z "rcs" w nazwie = RCS, drugi = plik wysyłki.
-  3. Każdy plik czyści: same numery (9 cyfr, bez +48/48/0048), bez pustych
-     wierszy, bez duplikatów, bez naszych numerów testowych.
+  3. Każdy plik przesiewa: same numery (9 cyfr, bez +48/48/0048), bez pustych
+     wierszy, BEZ NUMERÓW Z BLACKLIST (folder blacklisty/ obok skryptu),
+     bez duplikatów, bez naszych numerów testowych.
+     Brak blacklist = STOP, żaden plik nie powstaje.
      Wszystko, co odrzucone, trafia do odrzucone_*.csv z powodem.
   4. Plik wysyłki dzieli losowo: 80% -> ctgo_kody.csv (do Ernesta),
      20% -> ctgo_bezkodow.csv (zostaje u nas).
@@ -25,12 +27,14 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 
 HASLO = "CVM2026"
 FOLDER_SKRYPTU = Path(__file__).resolve().parent
 PLIK_TESTOWYCH = FOLDER_SKRYPTU / "test_numbers.csv"
+FOLDER_BLACKLIST = FOLDER_SKRYPTU / "blacklisty"
 ROZSZERZENIA = {".txt", ".csv", ".xlsx", ".xls"}
 
 
@@ -107,10 +111,40 @@ def wczytaj_testowe():
     return {n for w in wiersze(PLIK_TESTOWYCH) for n in [normalizuj(w.split(",")[0].split(";")[0])] if n}
 
 
-def przesiej(path: Path, testowe: set, raport: list, etykieta: str, folder_wyj: Path):
+def numery_z_pliku(path: Path):
+    """Wszystkie numery z pliku, z każdej kolumny (blacklisty mogą mieć różny układ)."""
+    wynik = set()
+    for linia in wiersze(path):
+        for komorka in re.split(r"[,;\t|]", linia):
+            n = normalizuj(komorka)
+            if n:
+                wynik.add(n)
+    return wynik
+
+
+def wczytaj_blackliste():
+    """BEZ BLACKLISTY NIE PRZESIEWAMY – przerywa, zanim powstanie jakikolwiek plik."""
+    if not FOLDER_BLACKLIST.is_dir():
+        sys.exit(f"❌ STOP: nie ma folderu z blacklistami: {FOLDER_BLACKLIST}\n   Nic nie zostało wygenerowane.")
+    pliki = sorted(p for p in FOLDER_BLACKLIST.rglob("*")
+                   if p.is_file() and p.suffix.lower() in ROZSZERZENIA and not p.name.startswith("."))
+    if not pliki:
+        sys.exit(f"❌ STOP: folder {FOLDER_BLACKLIST} jest pusty.\n   Nic nie zostało wygenerowane.")
+    numery, opis = set(), []
+    for p in pliki:
+        z_pliku = numery_z_pliku(p)
+        if not z_pliku:
+            sys.exit(f"❌ STOP: z blacklisty {p.name} nie odczytałam ani jednego numeru – sprawdź plik.\n"
+                     "   Nic nie zostało wygenerowane.")
+        numery |= z_pliku
+        opis.append(f"  {p.name}: {len(z_pliku):,} numerów")
+    return numery, opis
+
+
+def przesiej(path: Path, testowe: set, blacklista: set, raport: list, etykieta: str, odrzucone_pliki: dict):
     linie = wiersze(path)
     puste = 0
-    odrzucone, duplikaty, usuniete_testowe = [], 0, 0
+    odrzucone, duplikaty, usuniete_testowe, na_blackliscie = [], 0, 0, 0
     widziane, wynik = set(), []
     for nr, linia in enumerate(linie, 1):
         if not linia.strip():
@@ -119,6 +153,8 @@ def przesiej(path: Path, testowe: set, raport: list, etykieta: str, folder_wyj: 
         n = normalizuj(linia)
         if n is None:
             odrzucone.append((nr, linia, "to nie jest numer telefonu"))
+        elif n in blacklista:
+            na_blackliscie += 1
         elif n in testowe:
             usuniete_testowe += 1
         elif n in widziane:
@@ -127,15 +163,13 @@ def przesiej(path: Path, testowe: set, raport: list, etykieta: str, folder_wyj: 
             widziane.add(n)
             wynik.append(n)
     if odrzucone:
-        with open(folder_wyj / f"odrzucone_{etykieta}.csv", "w", newline="", encoding="utf-8") as f:
-            w = csv.writer(f)
-            w.writerow(["nr_wiersza", "zawartosc", "powod"])
-            w.writerows(odrzucone)
+        odrzucone_pliki[f"odrzucone_{etykieta}.csv"] = odrzucone
     raport += [
         f"\n[{etykieta}] plik źródłowy: {path.name}",
         f"  wierszy w pliku:          {len(linie):>10,}",
         f"  pustych wierszy:          {puste:>10,}",
         f"  odrzuconych (nie numer):  {len(odrzucone):>10,}" + ("  -> zobacz odrzucone_" + etykieta + ".csv" if odrzucone else ""),
+        f"  ⛔ na blackliście:         {na_blackliscie:>10,}",
         f"  duplikatów:               {duplikaty:>10,}",
         f"  numerów testowych:        {usuniete_testowe:>10,}",
         f"  ✅ PO PRZESIANIU:          {len(wynik):>10,}",
@@ -163,26 +197,47 @@ def main():
     dzis = dt.date.today().strftime("%Y-%m-%d")
     nazwa = args.nazwa or f"{paczka.stem}_{dzis}"
     out = FOLDER_SKRYPTU / "wysylki" / nazwa
-    if out.exists() and any(out.iterdir()):
+    if out.exists():
         sys.exit(f"❌ Folder {out} już istnieje – podaj inną --nazwa albo go usuń.")
+
+    # 1) blacklisty – bez nich koniec, zanim cokolwiek powstanie
+    blacklista, opis_bl = wczytaj_blackliste()
+    testowe = wczytaj_testowe()
+
+    # 2) rozpakowanie do folderu tymczasowego (nic jeszcze nie trafia do wysylki/)
+    tmp = Path(tempfile.mkdtemp(prefix="ctgo_"))
+    if paczka.is_dir():
+        zrodlo = paczka
+    else:
+        rozpakuj(paczka, tmp)
+        zrodlo = tmp
+    plik_rcs, plik_wys = znajdz_pliki(zrodlo)
+
+    raport = [f"CTGO ETAP 1 – {nazwa}", f"uruchomiono: {dt.datetime.now():%Y-%m-%d %H:%M}",
+              f"paczka: {paczka}",
+              f"\n[BLACKLISTY] razem {len(blacklista):,} unikalnych numerów:", *opis_bl]
+    odrzucone_pliki = {}
+    rcs = przesiej(plik_rcs, testowe, blacklista, raport, "rcs", odrzucone_pliki)
+    wys = przesiej(plik_wys, testowe, blacklista, raport, "wysylka", odrzucone_pliki)
+
+    # 3) kontrola bezpieczeństwa: w wyniku nie może być nic z blacklisty
+    if (set(rcs) | set(wys)) & blacklista:
+        sys.exit("❌ STOP: po przesianiu nadal są numery z blacklisty – nic nie zostało zapisane.")
+
+    # 4) dopiero teraz zapisujemy pliki
     surowe = out / "0_paczka_od_ernesta"
     do_ernesta = out / "1_do_ernesta"
     u_nas = out / "2_zostaje_u_nas"
     for d in (surowe, do_ernesta, u_nas):
         d.mkdir(parents=True, exist_ok=True)
-
-    if paczka.is_dir():
-        zrodlo = paczka
-    else:
-        rozpakuj(paczka, surowe)
-        zrodlo = surowe
-    plik_rcs, plik_wys = znajdz_pliki(zrodlo)
-
-    raport = [f"CTGO ETAP 1 – {nazwa}", f"uruchomiono: {dt.datetime.now():%Y-%m-%d %H:%M}",
-              f"paczka: {paczka}"]
-    testowe = wczytaj_testowe()
-    rcs = przesiej(plik_rcs, testowe, raport, "rcs", out)
-    wys = przesiej(plik_wys, testowe, raport, "wysylka", out)
+    shutil.copy2(plik_rcs, surowe / plik_rcs.name)
+    shutil.copy2(plik_wys, surowe / plik_wys.name)
+    shutil.rmtree(tmp, ignore_errors=True)
+    for nazwa_pliku, rows in odrzucone_pliki.items():
+        with open(out / nazwa_pliku, "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f)
+            w.writerow(["nr_wiersza", "zawartosc", "powod"])
+            w.writerows(rows)
 
     wspolne = len(set(rcs) & set(wys))
     raport.append(f"\n  (info) numerów jednocześnie w RCS i w wysyłce: {wspolne:,}")
