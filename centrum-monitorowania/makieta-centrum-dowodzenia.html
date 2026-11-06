@@ -1,0 +1,745 @@
+<title>Centrum Dowodzenia</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app shell — sidebar „konsola” + panel główny; karta wątku wysuwa się z prawej jak panel instrumentów */
+:root{
+  --bg:#F3F5F9; --panel:#FFFFFF; --panel-2:#EAEEF5; --line:#D9DFEA;
+  --ink:#16203A; --ink-2:#4A5672; --ink-3:#7A859E;
+  --accent:#0B7A85; --accent-ink:#FFFFFF; --accent-soft:#DDF1F2;
+  --ok:#2F7D4F; --ok-soft:#E1F1E7; --warn:#A86A00; --warn-soft:#FBEFD6;
+  --crit:#B3261E; --crit-soft:#F9E1DE; --wait:#5B4FB0; --wait-soft:#E9E6F7;
+  --stars:none; --shadow:0 1px 2px rgba(22,32,58,.06),0 8px 24px rgba(22,32,58,.08);
+  --f-hud:"Chakra Petch","IBM Plex Sans",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0A0F1E; --panel:#121A2D; --panel-2:#1A2440; --line:#26314F;
+  --ink:#E7ECF6; --ink-2:#AAB5CE; --ink-3:#7381A2;
+  --accent:#4FD1C5; --accent-ink:#06201F; --accent-soft:#123A3E;
+  --ok:#6FCF97; --ok-soft:#14321F; --warn:#F2C14E; --warn-soft:#3A2E10;
+  --crit:#FF7A6E; --crit-soft:#3D1715; --wait:#A99BFF; --wait-soft:#241F45;
+  --stars:radial-gradient(1px 1px at 12% 18%,#ffffff55 50%,transparent 51%),radial-gradient(1px 1px at 68% 9%,#ffffff40 50%,transparent 51%),radial-gradient(1.5px 1.5px at 84% 42%,#ffffff35 50%,transparent 51%),radial-gradient(1px 1px at 33% 71%,#ffffff40 50%,transparent 51%),radial-gradient(1px 1px at 52% 38%,#ffffff2a 50%,transparent 51%),radial-gradient(1px 1px at 91% 83%,#ffffff40 50%,transparent 51%);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0A0F1E; --panel:#121A2D; --panel-2:#1A2440; --line:#26314F;
+  --ink:#E7ECF6; --ink-2:#AAB5CE; --ink-3:#7381A2;
+  --accent:#4FD1C5; --accent-ink:#06201F; --accent-soft:#123A3E;
+  --ok:#6FCF97; --ok-soft:#14321F; --warn:#F2C14E; --warn-soft:#3A2E10;
+  --crit:#FF7A6E; --crit-soft:#3D1715; --wait:#A99BFF; --wait-soft:#241F45;
+  --stars:radial-gradient(1px 1px at 12% 18%,#ffffff55 50%,transparent 51%),radial-gradient(1px 1px at 68% 9%,#ffffff40 50%,transparent 51%),radial-gradient(1.5px 1.5px at 84% 42%,#ffffff35 50%,transparent 51%),radial-gradient(1px 1px at 33% 71%,#ffffff40 50%,transparent 51%),radial-gradient(1px 1px at 52% 38%,#ffffff2a 50%,transparent 51%),radial-gradient(1px 1px at 91% 83%,#ffffff40 50%,transparent 51%);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35); color-scheme:dark}
+html,body{height:100%}
+body{background:var(--stars),var(--bg);background-attachment:fixed;color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100%}
+/* sidebar */
+.side{position:sticky;top:0;height:100vh;overflow:auto;background:var(--panel);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px}
+.brand b{font-family:var(--f-hud);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:13px;line-height:1.15;display:block}
+.brand small{font-family:var(--f-mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.04em}
+.radar{width:34px;height:34px;flex:none}
+.radar .sweep{transform-origin:17px 17px;animation:sweep 4s linear infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.radar .sweep{animation:none}}
+.navgroup{display:flex;flex-direction:column;gap:2px}
+.navlabel{font-family:var(--f-hud);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);padding:4px 10px}
+.nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;border:0;background:none;text-align:left;color:var(--ink-2);width:100%}
+.nav:hover{background:var(--panel-2);color:var(--ink)}
+.nav[aria-current="true"]{background:var(--accent-soft);color:var(--ink);font-weight:600}
+.nav .cnt{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
+.nav .cnt.hot{color:var(--crit)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.side .foot{margin-top:auto;font-size:11.5px;color:var(--ink-3);padding:0 8px}
+/* main */
+.main{min-width:0;padding-block:18px 60px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:22px}
+.search{flex:1 1 260px;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--ink-3)}
+.search input{border:0;background:none;outline:none;flex:1;min-width:0;color:var(--ink)}
+kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;color:var(--ink-3)}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 13px;font-weight:500}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:none}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:none;padding:7px 10px;font-size:12.5px;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--panel-2);color:var(--ink);font-weight:600}
+.eyebrow{font-family:var(--f-hud);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--f-hud);font-weight:600;font-size:28px;letter-spacing:.01em;margin:4px 0 4px;text-wrap:balance}
+h2{font-family:var(--f-hud);font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin:0;display:flex;align-items:center;gap:8px}
+h2 .n{font-family:var(--f-mono);letter-spacing:0;color:var(--ink-3);font-weight:400}
+.sub{color:var(--ink-2);margin:0 0 20px;max-width:70ch}
+.demo{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:2px 8px;border-radius:999px;background:var(--warn-soft);color:var(--warn);margin-left:8px;vertical-align:middle}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:18px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat .v{font-family:var(--f-hud);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .l{font-size:12px;color:var(--ink-2)}
+.stat.crit .v{color:var(--crit)} .stat.warn .v{color:var(--warn)} .stat.wait .v{color:var(--wait)}
+/* horizon */
+.hz{display:flex;flex-direction:column;gap:6px}
+.hzhead{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
+.hzhead:first-child{margin-top:0}
+.hzhead .bar{height:1px;flex:1;background:var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:start;padding:8px 10px;border-radius:10px;border:1px solid transparent}
+.row:hover{background:var(--panel-2)}
+.row .t{min-width:0}
+.row .t .title{font-weight:500}
+.row .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:3px;font-size:12px;color:var(--ink-3)}
+.row.done .title{text-decoration:line-through;color:var(--ink-3)}
+.when{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.when.late{color:var(--crit);font-weight:500}
+.chk{appearance:none;width:18px;height:18px;border:1.5px solid var(--ink-3);border-radius:5px;margin:2px 0 0;display:grid;place-content:center;background:var(--panel)}
+.chk:checked{background:var(--accent);border-color:var(--accent)}
+.chk:checked::after{content:"";width:8px;height:4px;border-left:2px solid var(--accent-ink);border-bottom:2px solid var(--accent-ink);transform:rotate(-45deg) translate(1px,-1px)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:11px;padding:1px 7px;border-radius:6px;background:var(--panel-2);color:var(--ink-2);white-space:nowrap}
+.chip .dot{width:7px;height:7px}
+.who{font-size:12px;color:var(--ink-2)}
+.prio{width:7px;height:7px;border-radius:50%;display:inline-block}
+.prio.p1{background:var(--crit)} .prio.p2{background:var(--warn)} .prio.p3{background:var(--line)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-toku{background:var(--accent-soft);color:var(--accent)}
+.s-klient{background:var(--wait-soft);color:var(--wait)}
+.s-zespol{background:var(--warn-soft);color:var(--warn)}
+.s-zrobic{background:var(--panel-2);color:var(--ink-2)}
+.s-wstrz{background:var(--panel-2);color:var(--ink-3)}
+.s-ok{background:var(--ok-soft);color:var(--ok)}
+.s-analiza{background:var(--accent-soft);color:var(--accent)}
+/* waiting */
+.wait{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.wait:last-child{border-bottom:0}
+.wait .who2{font-weight:600}
+.wait .what{grid-column:1/2;font-size:12.5px;color:var(--ink-2)}
+.age{font-family:var(--f-mono);font-size:12px;font-weight:500;padding:2px 8px;border-radius:999px;align-self:start;font-variant-numeric:tabular-nums}
+.age.a1{background:var(--ok-soft);color:var(--ok)} .age.a2{background:var(--warn-soft);color:var(--warn)} .age.a3{background:var(--crit-soft);color:var(--crit)}
+.lost{padding:10px 4px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.lost:last-child{border-bottom:0}
+.lost .why{font-size:12px;color:var(--crit)}
+.linkish{background:none;border:0;padding:0;color:var(--ink);font-weight:600;text-align:left}
+.linkish:hover{color:var(--accent)}
+/* client */
+.clienthead{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;margin-bottom:6px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12.5px;color:var(--ink-2);margin:6px 0 18px}
+.facts b{font-weight:600;color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 15px;display:flex;flex-direction:column;gap:9px;text-align:left;width:100%}
+.card:hover{border-color:var(--ink-3);box-shadow:var(--shadow)}
+.card .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card .code{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3)}
+.card .name{font-weight:600;font-size:15px;line-height:1.3}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;font-size:12.5px}
+.kv dt{font-family:var(--f-hud);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);padding-top:2px}
+.kv dd{margin:0;color:var(--ink-2)}
+.upd{background:var(--panel-2);border-radius:10px;padding:9px 11px;font-size:12.5px;color:var(--ink-2)}
+.upd .d{font-family:var(--f-mono);font-size:11px;color:var(--accent);display:block;margin-bottom:2px}
+.card .foot{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--ink-3);margin-top:auto}
+.prog{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono)}
+.prog i{display:block;width:54px;height:4px;border-radius:2px;background:var(--panel-2);overflow:hidden}
+.prog i b{display:block;height:100%;background:var(--accent)}
+.project{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+.project .phead{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.ptag{font-family:var(--f-hud);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+.project .pname{font-family:var(--f-hud);font-size:19px;font-weight:600}
+.pgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px}
+.mini{display:flex;flex-direction:column;gap:6px}
+.minirow{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--line);border-radius:10px;background:var(--bg);width:100%;text-align:left}
+.minirow:hover{border-color:var(--ink-3)}
+.minirow .nm{flex:1;min-width:0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.section{margin-top:26px}
+.section > h2{margin-bottom:10px}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.list{display:flex;flex-direction:column}
+.list .li{display:flex;gap:10px;align-items:baseline;padding:8px 2px;border-bottom:1px solid var(--line);font-size:13px}
+.list .li:last-child{border-bottom:0}
+.list .li .x{flex:1;min-width:0}
+.empty{border:1.5px dashed var(--line);border-radius:14px;padding:28px;text-align:center;color:var(--ink-2)}
+/* timeline (kluczowe daty) */
+.tl{display:flex;gap:0;overflow-x:auto;padding:6px 2px 4px}
+.tl .ev{flex:0 0 150px;position:relative;padding:18px 10px 0 0;border-top:2px solid var(--line)}
+.tl .ev::before{content:"";position:absolute;top:-6px;left:0;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--panel)}
+.tl .ev.crit::before{background:var(--crit)}
+.tl .ev .d{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2)}
+.tl .ev .x{font-size:12.5px;font-weight:500}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(5,10,25,.38);z-index:30}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--panel);border-left:1px solid var(--line);z-index:31;overflow:auto;box-shadow:var(--shadow);padding:20px max(22px,env(safe-area-inset-right,0px)) 40px 22px;padding-top:max(20px,env(safe-area-inset-top,0px))}
+.drawer .close{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));border:1px solid var(--line);background:var(--panel);border-radius:8px;width:32px;height:32px}
+.drawer h3{font-family:var(--f-hud);font-size:22px;margin:4px 40px 8px 0;font-weight:600}
+.dsec{margin-top:20px}
+.dsec > h2{margin-bottom:8px}
+.lastbox{background:var(--accent-soft);border-radius:12px;padding:12px 14px}
+.lastbox .d{font-family:var(--f-mono);font-size:12px;color:var(--accent);font-weight:500}
+.lastbox p{margin:4px 0 0}
+.addupd{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+textarea,input[type=text],select{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%}
+textarea{min-height:76px;resize:vertical}
+.formrow{display:flex;flex-wrap:wrap;gap:8px}
+.formrow > *{flex:1 1 160px}
+.arch{border-left:2px solid var(--line);margin-left:6px;padding-left:16px;display:flex;flex-direction:column;gap:12px}
+.arch .e{position:relative}
+.arch .e::before{content:"";position:absolute;left:-22px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--panel);border:2px solid var(--ink-3)}
+.arch .e .d{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3)}
+.arch .e p{margin:2px 0 0;color:var(--ink-2);font-size:13px}
+details summary{cursor:pointer;list-style:none}
+details summary::-webkit-details-marker{display:none}
+.sumbtn{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-hud);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{font-size:12.5px;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:4px 9px}
+.links a:hover{border-color:var(--accent)}
+/* modal */
+.modal{position:fixed;inset:0;display:grid;place-items:center;z-index:40;padding:16px}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(720px,100%);max-height:90vh;overflow:auto;padding:20px;box-shadow:var(--shadow)}
+.modal pre{font-family:var(--f-mono);font-size:12px}
+.diff{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.diff .dl{display:flex;gap:10px;align-items:baseline;font-size:13px;padding:7px 10px;border-radius:9px;background:var(--panel-2)}
+.diff .dl b{font-family:var(--f-mono);font-size:11px;min-width:84px}
+.diff .add b{color:var(--ok)} .diff .done b{color:var(--accent)} .diff .chg b{color:var(--warn)} .diff .arc b{color:var(--ink-3)}
+/* table */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:13px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-family:var(--f-hud);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:600;background:var(--panel-2)}
+td.num{font-family:var(--f-mono);text-align:center;font-variant-numeric:tabular-nums}
+td.num.hi{color:var(--accent);font-weight:600}
+tr:last-child td{border-bottom:0}
+.rule{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-3)}
+.tpl{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px;margin:8px 0}
+.krys{white-space:pre-wrap;font-family:var(--f-body);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:13.5px;line-height:1.6}
+/* toast / notif */
+.notif{position:fixed;top:max(14px,env(safe-area-inset-top,0px));right:max(14px,env(safe-area-inset-right,0px));width:min(360px,calc(100% - 28px));background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;z-index:50;display:flex;gap:11px}
+.notif .ic{width:34px;height:34px;border-radius:8px;background:var(--accent);display:grid;place-items:center;flex:none}
+.notif .tt{font-weight:600;font-size:13px}
+.notif .bd{font-size:12.5px;color:var(--ink-2)}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:10px;z-index:60;font-size:13px}
+.settings{display:flex;flex-direction:column;gap:10px}
+.toggle{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:10px}
+.toggle input{margin-top:3px;accent-color:var(--accent)}
+.toggle small{display:block;color:var(--ink-3)}
+@media (max-width:980px){.grid2,.pgrid,.cols3{grid-template-columns:minmax(0,1fr)}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;gap:10px;padding:10px max(16px,env(safe-area-inset-left,0px));border-right:0;border-bottom:1px solid var(--line)}
+  .side .navgroup{flex-direction:row;flex:none}
+  .side .navlabel,.side .foot,.brand small{display:none}
+  .nav{width:auto;white-space:nowrap}
+  .main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  h1{font-size:23px}
+}
+</style>
+
+<div class="app">
+  <aside class="side" aria-label="Nawigacja">
+    <div class="brand">
+      <svg class="radar" viewBox="0 0 34 34" aria-hidden="true">
+        <circle cx="17" cy="17" r="15.5" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+        <circle cx="17" cy="17" r="10" fill="none" stroke="currentColor" stroke-opacity=".25"/>
+        <circle cx="17" cy="17" r="4.5" fill="none" stroke="currentColor" stroke-opacity=".2"/>
+        <g class="sweep"><path d="M17 17 L17 1.5 A15.5 15.5 0 0 1 30.4 9.2 Z" fill="var(--accent)" fill-opacity=".35"/><line x1="17" y1="17" x2="17" y2="1.5" stroke="var(--accent)" stroke-width="1.5"/></g>
+        <circle cx="25" cy="11" r="1.8" fill="var(--accent)"/>
+        <circle cx="17" cy="17" r="1.6" fill="currentColor"/>
+      </svg>
+      <div><b>Centrum<br>Dowodzenia</b><small>v0.1 · makieta</small></div>
+    </div>
+    <div class="navgroup" id="navMain"></div>
+    <div class="navgroup" id="navClients"></div>
+    <div class="navgroup" id="navTools"></div>
+    <div class="foot">Dane lokalnie na Twoim Macu · kopia na iCloud Drive</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <label class="search" for="q"><svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6"/></svg><input id="q" type="text" placeholder="Szukaj wątku, osoby, numeru RM/ADO…"><kbd>⌘K</kbd></label>
+      <button class="btn" id="btnQuick" type="button">＋ Dodaj <kbd>⌘N</kbd></button>
+      <button class="btn primary" id="btnPaste" type="button">Wklej update z Claude</button>
+      <div class="seg" role="group" aria-label="Motyw">
+        <button type="button" data-th="auto">Auto</button><button type="button" data-th="light">Jasny</button><button type="button" data-th="dark">Ciemny</button>
+      </div>
+      <button class="btn ghost" id="btnSettings" type="button" aria-label="Ustawienia">⚙︎</button>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+<div id="layer"></div>
+
+<script>
+(function(){
+const TODAY = new Date(2026,9,28); // makieta: środa 28.10.2026
+const D = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
+const days = (a,b)=>Math.round((a-b)/86400000);
+const fmt = s => { if(!s) return '—'; const d=D(s); return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0'); };
+const DOW=['nd','pn','wt','śr','cz','pt','sb'];
+const fmtD = s => s? DOW[D(s).getDay()]+' '+fmt(s) : '—';
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+
+const CLIENTS=[
+ {id:'ORL',name:'ORLEN',color:'#E2711D',facts:[['Kontakt','Wiola (VITAY), Kamila, Daria (CI), Kamil, Dominika'],['Booking','pn 12:00'],['Narzędzie','Redmine VITAY']]},
+ {id:'INEA',name:'INEA',color:'#2F6FDE',facts:[['Kontakt','Jan Mausch (decydent), Krzysztof Krysztofiak, Filip Mizgalski'],['Rytm','weekly wt 12:00 · Janek co 2 tyg.'],['Narzędzie','Azure DevOps'],['Uwaga','freeze PROD cały grudzień']]},
+ {id:'PKOU',name:'PKOU',color:'#0E9488',facts:[['Kontakt','Oliwia Wojcieszuk'],['Status','co 2–4 tyg.'],['Narzędzie','Redmine (kliencki + WEW)']]},
+ {id:'WIE',name:'Wiener',color:'#C2364B',facts:[['Kontakt','Rafał Błęcki (na Ty), Andrzej Burdzy'],['Status','co 2 tyg.'],['Narzędzie','Redmine (kliencki + WEW)']]},
+ {id:'CNK',name:'CNK',color:'#7A859E',facts:[['Zakres','tylko SLA + pojedyncze taski'],['Narzędzie','Redmine + plik SLA']]},
+ {id:'OKT',name:'Oktawave',color:'#8B5CF6',facts:[['Status','nowy klient']]}
+];
+const ST={toku:['W toku','s-toku'],klient:['Czekam na klienta','s-klient'],zespol:['Czekam na zespół','s-zespol'],zrobic:['Do zrobienia','s-zrobic'],analiza:['Analiza','s-analiza'],wstrz:['Wstrzymane','s-wstrz'],ok:['Zakończone','s-ok']};
+
+// Projekty = większe wątki (projekt w projekcie)
+const PROJECTS=[
+ {id:'INEA-SPRZ',client:'INEA',name:'Proces sprzedażowy → uproszczenia',ref:'ADO 88078',status:'toku',ball:'Zespół — testy paczki 1 (Natalia)',next:'Testy paczki 1 na TEST',nextDate:'2026-11-06',
+  last:{d:'2026-10-27',t:'Weekly + status z Jankiem: brak podglądu na STAGE przed urlopem — testujemy u siebie i idziemy dalej bez jego akceptacji. Paczki 1 nie wdrażamy osobno; PROD po powrocie Janka, najlepiej 2 większe wdrożenia (18–30.11).'},
+  arch:[{d:'2026-10-21',t:'Estymacja 168 h (FE 120, BE 2, QA 23, PM 23). FE przejmuje Patryk Kilian, onboarding przez Ninę. Ryzyko: pula Rozwoju ok. 177 h na paź+lis.'},{d:'2026-10-14',t:'Zmiana wykonawcy FE: Piotr Nazaruk odchodzi do projektu Szczepana, FE przejmuje Patryk.'}],
+  links:[['ADO 88078','https://fabritytfs.visualstudio.com/INEA/_workitems/edit/88078'],['Figma','https://www.figma.com/design/AMGPdmcgUckHo43kY8lkif/'],['Czat Claude','https://claude.ai/chat/8bb3bf80-a139-488c-9c4e-ff2e2d6db75a']],
+  paper:[{t:'Zgłoszenie wdrożeń do Krzysztofa (DW Janek) + placeholdery',due:'2026-11-11',rule:'tydzień przed każdym wdrożeniem'}]},
+ {id:'ORL-TD',client:'ORL',name:'TradeDoubler',ref:'Etap 1: PO · Etap 2: T&M',status:'toku',ball:'ORLEN — podpisane PO za Etap 1',next:'Follow-up PO za Etap 1 → FV',nextDate:'2026-10-28',
+  last:{d:'2026-10-21',t:'Etap 1 zrealizowany w sierpniu, PO wysłane — czekamy na podpis. Startuje Etap 2 (docelowa integracja REST API) — wykonuje Romeo, rozliczenie T&M.'},
+  arch:[{d:'2026-09-30',t:'Oferta rozszerzona o zakres dokumentacji, wysłana do ORLEN-u.'}],
+  links:[['Czat Claude','https://claude.ai/chat/35a5426b-0d7f-4645-a67a-e97f184c6700']],
+  paper:[{t:'Raport godzin T&M (Romeo) za październik',due:'2026-11-05',rule:'co miesiąc, 5.'},{t:'Podpisane PO Etap 1 → zlecenie FV',due:'2026-10-28',rule:'jednorazowo'}]},
+ {id:'ORL-CI',client:'ORL',name:'Proces CI/CD',ref:'T&M · PO co miesiąc',status:'zespol',ball:'Michał — update',next:'Zebrać update od Michała',nextDate:'2026-10-28',
+  last:{d:'2026-10-21',t:'Michał działa (weryfikacja i konsulting standardu SDLC/CI-CD budowanego przez Escolę). Czekamy na jego update.'},arch:[],
+  links:[['Czat Claude','https://claude.ai/chat/c6dec4f8-545a-4c94-9b61-5e1cc6f7b7b0']],
+  paper:[{t:'Rozliczenie godzin do Darii → PO → FV',due:'2026-11-05',rule:'co miesiąc, 5.'}]},
+ {id:'ORL-VITAY',client:'ORL',name:'Obsługa stała VITAY',ref:'ryczałt 45 h/mies.',status:'toku',ball:'Wiola — podpisany protokół Q3',next:'Follow-up protokół Q3 → FV',nextDate:'2026-10-28',
+  last:{d:'2026-10-21',t:'Raport za wrzesień i protokół Q3 wysłane — czekamy na podpisany protokół od Wioli, potem zlecenie FV.'},arch:[],
+  links:[['Redmine VITAY','https://redmine.fabrity.pl/projects/vitay/issues']],
+  paper:[{t:'Raport miesięczny za październik',due:'2026-11-10',rule:'co miesiąc, do 10.'},{t:'Raport bieżący dla Wioli',due:'2026-11-13',rule:'co miesiąc, ok. 15.'},{t:'Mail o materiały do kuponów i promocji (grudzień)',due:'2026-11-20',rule:'co miesiąc, 20.'},{t:'Protokół kwartalny Q4 (26 325 zł netto)',due:'2027-01-08',rule:'co kwartał'}]}
+];
+
+const THREADS=[
+ // INEA — wątki w projekcie
+ {id:'INEA-SPRZ-P1',client:'INEA',project:'INEA-SPRZ',name:'Paczka 1 — testy i poprawki',status:'toku',ball:'Natalia — testy (GA e-commerce)',next:'Testy paczki 1 na TEST',nextDate:'2026-11-06',last:{d:'2026-10-27',t:'Paczka 1 (menu, strona główna, Hero Banner, formularz zasięgu) na TEST. Booking Natalii do ustalenia z Martyną.'},arch:[],
+  tasks:[{t:'Booking Natalii na testy — rozmowa z Martyną',who:'Ja',due:'2026-10-30',p:2},{t:'Testy paczki 1 na TEST',who:'Natalia',due:'2026-11-06',p:2},{t:'Poprawki po testach paczki 1',who:'Patryk',due:'2026-11-10',p:2}]},
+ {id:'INEA-SPRZ-PROD',client:'INEA',project:'INEA-SPRZ',name:'Plan 2 wdrożeń PROD',status:'zrobic',ball:'Ja + Nina',next:'Zakres i daty 2 wdrożeń',nextDate:'2026-11-13',last:{d:'2026-10-27',t:'Ryzyko (Nina): formularz zasięgu jest też we flow produktowym i konfiguratorze — częściowy PROD może rozwalić ścieżkę zakupową.'},arch:[],
+  tasks:[{t:'Plan 2 wdrożeń PROD (zakres + daty)',who:'Ja',due:'2026-11-13',p:2},{t:'STAGE z kompletem zmian do akceptacji Janka',who:'Nina / Patryk',due:'2026-11-18',p:2}]},
+ // INEA — samodzielne
+ {id:'INEA-MOBILE',client:'INEA',name:'Zmiany w sprzedaży usług mobilnych (Arnold)',status:'analiza',ball:'Nina — analiza',next:'Analiza: pomijanie kroków vs copy + wycena',nextDate:'2026-11-06',last:{d:'2026-10-27',t:'Zmiana wymuszona prawnie: weryfikacja tożsamości z Self Install w sprzedaży mobilnej. Robimy na pewno — pytanie jak. Cel INEA: 2. połowa listopada. Ryzyko kolizji z 88078.'},arch:[],
+  tasks:[{t:'Uzupełnić numer ticketu od Arnolda',who:'Ja',due:'2026-10-28',p:3},{t:'Analiza + wycena + kolizje z 88078',who:'Nina',due:'2026-11-06',p:2},{t:'Sekwencja z 88078 + booking FE',who:'Ja',due:'2026-11-10',p:2}]},
+ {id:'INEA-KARIERA',client:'INEA',name:'Strona Kariera',ref:'ADO 93998',status:'zespol',ball:'Krystian — wycena BE',waitSince:'2026-10-27',waitWho:'Krystian',waitWhat:'Wycena BE do Kariery',next:'Opis wyceny FE+BE na tasku',nextDate:'2026-10-29',last:{d:'2026-10-27',t:'Janek akceptuje wycenę z góry. FE 3 MD (Nina, preferowana). Czekamy na wycenę BE. Realizacja realnie styczeń 2027.'},arch:[{d:'2026-10-16',t:'Spotkanie przeglądowe Janek + Nina; FE głównie, BE tylko eRecruiter.'}],
+  tasks:[{t:'Wycena BE',who:'Krystian',due:'2026-10-29',p:2},{t:'Opis wyceny FE+BE na tasku',who:'Ja',due:'2026-10-29',p:2},{t:'Decyzja o wykonawcy FE + booking',who:'Ja',due:'2026-10-30',p:2}]},
+ {id:'INEA-SSL',client:'INEA',name:'Certyfikat SSL produkcja',ref:'ADO 93971',status:'klient',ball:'Filip — certyfikat',waitSince:'2026-10-27',waitWho:'Filip Mizgalski',waitWhat:'Cert z pełnym łańcuchem',next:'Mail: Filip + Krzysztof, DW Janek',nextDate:'2026-10-28',last:{d:'2026-10-27',t:'Janek: ten cert mailowo, Krzysztofa informować obowiązkowo, placeholder OK. Krystian i Zbyszek nie mają jeszcze dostępów. Podmiana ~05.11.'},arch:[{d:'2026-10-16',t:'Incydent przy wymianie certu backend: ~1 h niedostępności (PAM/VPN, wolumeny Dockera, brak certu pośredniego).'}],
+  tasks:[{t:'Mail: Filip + Krzysztof, DW Janek',who:'Ja',due:'2026-10-28',p:1},{t:'Podbić Filipa, jeśli cisza',who:'Ja',due:'2026-10-30',p:1},{t:'Spotkanie Krystian + Zbyszek (procedura, dostępy)',who:'Ja',due:'2026-11-02',p:1},{t:'Weryfikacja dostępów',who:'Zbyszek / Krystian',due:'2026-11-04',p:1},{t:'Podmiana certu + weryfikacja łańcucha',who:'Zbyszek',due:'2026-11-05',p:1}]},
+ {id:'INEA-DOSTEPY',client:'INEA',name:'Dostępy i uprawnienia',status:'klient',ball:'Krzysztof / Dominik',waitSince:'2026-10-24',waitWho:'Krzysztof, Dominik',waitWhat:'Odpowiedź na maile o dostępy',next:'Lista braków + podbicie maili',nextDate:'2026-10-30',last:{d:'2026-10-27',t:'Maile do Krzysztofa i Dominika wysłane (Krystian, Patryk w DW).'},arch:[],
+  tasks:[{t:'Lista braków + podbicie maili',who:'Krystian, Patryk',due:'2026-10-30',p:1},{t:'Netskope / odnowienie dostępu',who:'Zbyszek',due:'2026-11-02',p:1}]},
+ {id:'INEA-LB',client:'INEA',name:'Podatności load balancera',status:'zespol',ball:'Krystian — instrukcje dla Filipa',waitSince:'2026-10-14',waitWho:'Krystian',waitWhat:'Instrukcje do podatności LB',next:'Stan instrukcji dla Filipa',nextDate:'2026-10-28',last:{d:'2026-10-21',t:'Termin dla Critical ok. 27.10. Nie poruszone na Weekly ani na statusie.'},arch:[],
+  tasks:[{t:'Podatności LB — stan instrukcji dla Filipa',who:'Krystian',due:'2026-10-28',p:1}]},
+ {id:'INEA-AI',client:'INEA',name:'Oświadczenie AI',status:'klient',ball:'Prawnik INEA',waitSince:'2026-10-01',waitWho:'Bartosz Chęciński (prawnik INEA)',waitWhat:'Oświadczenie AI',next:'Zapytać o status po powrocie Janka',nextDate:'2026-11-18',last:{d:'2026-10-21',t:'Oświadczenie u prawnika INEA, Janek podbija u siebie.'},arch:[],tasks:[]},
+ // ORLEN
+ {id:'ORL-MULTI',client:'ORL',name:'Zmiany dla multiportalu (Dominika)',status:'klient',ball:'Dominika',waitSince:'2026-10-15',waitWho:'Dominika Zybura-Miszewska',waitWhat:'Odpowiedź ws. zmian w multiportalu',next:'Po odpowiedzi — realizacja (Piotr N. 1 MD)',nextDate:null,last:{d:'2026-10-21',t:'Rozliczane z budżetu Oli (multiportal), nie z ryczałtu VITAY.'},arch:[],tasks:[]},
+ {id:'ORL-PLUGIN',client:'ORL',name:'Plugin mapowy — większa wycena (Hubert)',status:'klient',ball:'Hubert ↔ Dominika',waitSince:'2026-10-17',waitWho:'Hubert + Dominika',waitWhat:'Ustalenia orlen.pl vs multiportal',next:'Odpowiedzi do Romeo i Piotra N. → wycena',nextDate:null,last:{d:'2026-10-21',t:'Hubert odesłał odpowiedzi, ale plugin ma być na orlen.pl i multiportalu — muszą to uzgodnić wewnętrznie.'},arch:[],tasks:[]},
+ {id:'ORL-KAMIL',client:'ORL',name:'Pytanie od Kamila Smolińskiego',status:'klient',ball:'Kamil',waitSince:'2026-10-09',waitWho:'Kamil Smoliński',waitWhat:'Odpowiedź na pytanie',next:'Przypomnieć się Kamilowi',nextDate:'2026-10-30',last:{d:'2026-10-21',t:'Brak odpowiedzi od Kamila.'},arch:[],tasks:[{t:'Przypomnieć się Kamilowi',who:'Ja',due:'2026-10-30',p:3}]},
+ // PKOU
+ {id:'PKOU-PHP',client:'PKOU',name:'Podatności RCE w PHP (CSIRT KNF)',ref:'RM 168799',status:'toku',ball:'Fabrity — wersja PHP + termin',next:'Potwierdzić zastępstwo za Zbyszka',nextDate:'2026-10-28',last:{d:'2026-10-21',t:'Rekomendacja CSIRT KNF (DORA). Poprawka i obrazy dockerowe 21–22.10. Zbyszek nieobecny, zastępstwo do potwierdzenia.'},arch:[],
+  tasks:[{t:'Sprawdź, jaką mamy wersję PHP',who:'Krystian',due:'2026-10-28',p:2,rm:'https://redmine.fabrity.pl/issues/168799'},{t:'Potwierdzić zastępstwo (Krzysztof Parasiak)',who:'Ja',due:'2026-10-28',p:1}]},
+ {id:'PKOU-HOST',client:'PKOU',name:'Dostęp do serwisu po IP (Host header)',ref:'RM 168739',status:'zespol',ball:'Krystian — analiza',waitSince:'2026-10-07',waitWho:'Krystian',waitWhat:'Analiza nagłówka Host',next:'Analiza, pytania do klienta',nextDate:null,last:{d:'2026-10-14',t:'Zespół Bezpieczeństwa PKOU zgłosił, że serwis odpowiada pod IP:port z pominięciem domeny.'},arch:[],
+  tasks:[{t:'Analiza, weryfikacja, pytania do klienta',who:'Krystian',due:'2026-10-30',p:2,rm:'https://redmine.fabrity.pl/issues/168739'}]},
+ {id:'PKOU-FONT',client:'PKOU',name:'Nowy font w całym serwisie',ref:'RM 168633',status:'toku',ball:'Oliwia — potwierdzenie w RM',next:'Wgranie fontu na STAGE',nextDate:'2026-11-03',last:{d:'2026-10-21',t:'Oliwia potwierdziła na statusie realizację w całym serwisie (maks. 1 h).'},arch:[],
+  tasks:[{t:'Wgranie nowego fontu na stronę testową',who:'Krystian',due:'2026-11-03',p:3,rm:'https://redmine.fabrity.pl/issues/168633'}]},
+ {id:'PKOU-Q3',client:'PKOU',name:'Rozliczenie nadwyżki Q3 (Zlecenie nr 12)',status:'klient',ball:'PKOU — podpis zamówienia',waitSince:'2026-10-21',waitWho:'PKOU (Oliwia)',waitWhat:'Podpis Zlecenia nr 12',next:'Follow-up podpisu',nextDate:'2026-10-28',last:{d:'2026-10-21',t:'Saldo września −51,5 rbh. Część z puli październikowej, reszta zleceniem po 190 zł/h. Do wyjaśnienia z Olą podział FV.'},arch:[],tasks:[{t:'Follow-up: podpis Zlecenia nr 12',who:'Ja',due:'2026-10-28',p:2}]},
+ {id:'PKOU-WCAG',client:'PKOU',name:'WCAG / Kinaole — pełny audyt',status:'klient',ball:'Rafał Wojda',waitSince:'2026-09-29',waitWho:'Rafał Wojda',waitWhat:'Odpowiedzi + podpisane zamówienie nr 11',next:'Przypomnienie do Rafała',nextDate:'2026-10-30',last:{d:'2026-10-21',t:'Prośba nr 2 czeka na podpisane zamówienie i odpowiedzi Rafała, który długo nie odpowiada.'},arch:[],tasks:[{t:'Przypomnienie do Rafała Wojdy',who:'Ja',due:'2026-10-30',p:3}]},
+ // Wiener
+ {id:'WIE-PENTEST',client:'WIE',name:'Pentesty modułu ankiet',ref:'RM 168801',status:'toku',ball:'Ja → potem Jarek Banasiak',next:'Kontakt z Jarkiem ws. Pawła Polakiewicza',nextDate:'2026-10-28',last:{d:'2026-10-26',t:'Rafał poprosił o testy przez nas, rozliczone z godzin obsługowych. Piotr Neffe: Paweł Polakiewicz (UNUM) przez Jarka Banasiaka, alternatywnie Łukasz Rosłon z Okta. Wiadomość do Jarka przygotowana.'},
+  arch:[{d:'2026-10-21',t:'Odpowiedź do Rafała: nie robiliśmy pentestów, rekomendujemy zlecenie zewnętrznej firmie.'}],
+  links:[['Czat Claude','https://claude.ai/chat/c05d3ea0-2948-4110-b827-111e51fe5a73']],
+  tasks:[{t:'Kontakt z Jarkiem Banasiakiem',who:'Ja',due:'2026-10-28',p:2},{t:'Wycena pentestów dla Rafała',who:'Ja',due:null,p:3}]},
+ {id:'WIE-VIG',client:'WIE',name:'Propozycja współpracy VIG / WordPress',status:'klient',ball:'Wiener / Piotr Neffe',waitSince:'2026-10-14',waitWho:'Piotr Neffe → Rafał',waitWhat:'Telefon do Rafała ws. VIG',next:'Zapytać Piotra w środę',nextDate:'2026-10-28',last:{d:'2026-10-21',t:'Etap rozpoznawczy. Preferowany aneks z rozszerzeniem zakresu; potrzebny audyt. Ryzyko: obłożenie Krystiana.'},arch:[],tasks:[{t:'Zapytać Piotra Neffe, czy dzwonił do Rafała',who:'Ja',due:'2026-10-28',p:3}]},
+ {id:'WIE-ANKIETY',client:'WIE',name:'Ankiety — maskowanie halo.compensa.pl',ref:'RM 168804',status:'toku',ball:'Krystian',next:'Zmiana maskowania',nextDate:'2026-10-28',last:{d:'2026-10-24',t:'Krystian może odpisać Andrzejowi bezpośrednio na grupce Wiener x Fabrity.'},arch:[],
+  tasks:[{t:'Zmiana maskowania na halo.compensa.pl',who:'Krystian',due:'2026-10-28',p:1,rm:'https://redmine.fabrity.pl/issues/168804',note:'Możesz odpisać do Andrzeja bezpośrednio na grupce Wiener x Fabrity na Teamsach.'}]},
+ {id:'WIE-DRUPAL',client:'WIE',name:'Aktualizacja Drupala + PHP',ref:'RM 168762',status:'toku',ball:'Krystian — wdrożenie',next:'Wdrożenie poniedziałek wieczór',nextDate:'2026-11-02',last:{d:'2026-10-24',t:'Termin klienta niewykonalny — wdrożenie przesunięte na poniedziałek wieczór.'},arch:[],
+  tasks:[{t:'Aktualizacja Drupala + PHP — wdrożenie',who:'Krystian',due:'2026-11-02',p:2,rm:'https://redmine.fabrity.pl/issues/168762',note:'Wdrożenie w poniedziałek wieczorem.'}]},
+ {id:'WIE-DORA',client:'WIE',name:'DORA',ref:'RM 164151',status:'toku',ball:'Krystian',next:'Silne hasła, dostęp dla Compensy',nextDate:'2026-11-09',last:{d:'2026-10-21',t:'Część wymagań przekazana Krystianowi, reszta wstrzymana.'},arch:[],
+  tasks:[{t:'DORA',who:'Krystian',due:'2026-11-09',p:3,rm:'https://redmine.fabrity.pl/issues/164151'}]},
+ // CNK
+ {id:'CNK-SYNC',client:'CNK',name:'Synchronizacja',ref:'RM 166949',status:'toku',ball:'Krystian',next:'Synchronizacja',nextDate:'2026-10-28',last:{d:'2026-10-24',t:'Na liście priorytetów Krystiana na dziś.'},arch:[],
+  tasks:[{t:'Synchronizacja',who:'Krystian',due:'2026-10-28',p:1,rm:'https://redmine.fabrity.pl/issues/166949'}]}
+];
+PROJECTS.forEach(p=>{p.tasks=p.tasks||[]});
+THREADS.forEach(t=>{t.tasks=(t.tasks||[]).map(x=>({...x,done:false}));t.arch=t.arch||[];t.links=t.links||[]});
+
+const LOOSE=[
+ {client:'INEA',t:'Raporty październik SLA + Rozwój (RCP vs ADO)',who:'Ja',due:'2026-10-29',p:1,paper:true},
+ {client:'INEA',t:'Wysłać raporty Jankowi (akceptacja przed urlopem)',who:'Ja',due:'2026-10-29',p:1,paper:true},
+ {client:'INEA',t:'Zamknięcie sprintu + tablice ADO listopad',who:'Ja',due:'2026-11-02',p:2,paper:true},
+ {client:'INEA',t:'Ustalić, kto odnawia certy TEST (k2it)',who:'Ja',due:'2026-11-06',p:2},
+ {client:'INEA',t:'Umowa — termin obowiązywania / aneks',who:'Ja',due:'2026-11-13',p:2},
+ {client:'WIE',t:'Waloryzacja wynagrodzenia (rocznica umowy)',who:'Ja',due:'2026-10-27',p:1,paper:true},
+ {client:'WIE',t:'Zaplanować upgrade PHP (EOL 8.4 w grudniu)',who:'Ja',due:'2026-11-13',p:2},
+ {client:'PKOU',t:'Wyjaśnić z Olą podział FV 75/25 vs 50/50',who:'Ja',due:null,p:3}
+].map(x=>({...x,done:false}));
+
+const PAPER=[
+ {client:'INEA',t:'Raporty SLA + Rozwój za poprzedni miesiąc',rule:'co miesiąc, 5. (dzień roboczy)',due:'2026-11-05',lead:2},
+ {client:'INEA',t:'Nowa iteracja ADO + task „Zarządzanie projektem”',rule:'pierwszy dzień roboczy miesiąca',due:'2026-11-02',lead:1},
+ {client:'PKOU',t:'Raport godzinowy za poprzedni miesiąc',rule:'co miesiąc, 5.',due:'2026-11-05',lead:2},
+ {client:'PKOU',t:'Faktury cykliczne — weryfikacja pliku (PKOU, Wiener)',rule:'co miesiąc, 6.',due:'2026-11-06',lead:1},
+ {client:'WIE',t:'Raport godzinowy + stan puli rbh',rule:'co miesiąc, 5.',due:'2026-11-05',lead:2},
+ {client:'WIE',t:'Monitoring bezpieczeństwa (Drupal SA, PHP, mimemail)',rule:'co miesiąc, 25.',due:'2026-11-25',lead:1},
+ {client:'WIE',t:'Waloryzacja wynagrodzenia',rule:'co rok, 27.10',due:'2027-10-27',lead:14},
+ {client:'PKOU',t:'Kwartalna aktualizacja Drupala',rule:'co kwartał, początek',due:'2027-01-11',lead:5}
+];
+PROJECTS.forEach(p=>p.paper.forEach(x=>PAPER.push({client:p.client,project:p.id,t:x.t,rule:x.rule,due:x.due,lead:2})));
+PAPER.forEach(p=>p.done=false);
+
+const TERMS=[
+ {client:'INEA',t:'Certyfikat SSL inea.pl (PROD)',due:'2026-11-12',kind:'Certyfikat'},
+ {client:'INEA',t:'Certy TEST k2it (frontend/backend)',due:'2026-12-05',kind:'Certyfikat'},
+ {client:'INEA',t:'Certy STAGE (frontend-stage / backend-stage)',due:'2027-08-17',kind:'Certyfikat'},
+ {client:'WIE',t:'PHP 8.4 — koniec wsparcia',due:'2026-12-31',kind:'Platforma'},
+ {client:'WIE',t:'Rocznica umowy — waloryzacja',due:'2027-10-27',kind:'Umowa'},
+ {client:'INEA',t:'Freeze wdrożeń PROD',due:'2026-12-01',kind:'Okno'}
+];
+const KEYDATES={INEA:[['2026-10-29','Raport do Janka + wycena Kariery'],['2026-10-30','Urlop Janka (do 17.11)'],['2026-11-02','Powrót Zbyszka'],['2026-11-05','Podmiana SSL'],['2026-11-12','Wygasa cert inea.pl',1],['2026-11-18','Okno wdrożeń PROD'],['2026-12-01','Freeze PROD',1],['2026-12-19','Urlop Janka (do 04.01)']],ORL:[['2026-11-05','Rozliczenia CI i TD'],['2026-11-10','Raport VITAY'],['2026-11-20','Mail o kupony'],['2027-01-08','Protokół Q4']],WIE:[['2026-11-02','Wdrożenie Drupal + PHP'],['2026-12-31','EOL PHP 8.4',1]]};
+
+const BOOK={weeks:['26.10','02.11','09.11','16.11','23.11'],rows:[
+ {who:'Krystian',what:'Stały booking: CNK, PKOU, Wiener, INEA',vals:[2.5,2.5,2.5,2.5,2.5],fixed:true},
+ {who:'Natalia',what:'VITAY — kupony (ostatni tydzień: 1 MD zamiast 0,5)',vals:[1,0.5,0.5,0.5,1],fixed:true},
+ {who:'Natalia',what:'INEA — testy paczki 1',vals:[0,1,0,0,0],todo:true},
+ {who:'Patryk Kilian',what:'INEA — FE proces sprzedażowy',vals:[3,3,3,3,3],todo:true},
+ {who:'Piotr Nazaruk',what:'ORLEN — plugin mapowy (Dominika), łącznie 1 MD',vals:[0,0,1,0,0],todo:true},
+ {who:'Zbyszek + Krystian',what:'INEA — podmiana SSL',vals:[0,1,0,0,0],todo:true},
+ {who:'Romeo',what:'ORLEN — TradeDoubler Etap 2',vals:['?','?','?','?','?'],todo:true}
+]};
+
+const TPL={vitay:`Temat: Materiały do kuponów i promocji – {KOLEJNY_MIESIĄC} {ROK}
+
+Cześć Wiolu, cześć Kamilo,
+zbliża się {KOLEJNY_MIESIĄC}, dlatego prosimy o przesłanie materiałów do kuponów (Wiola) oraz do promocji (Kamila) na ten miesiąc. Dzięki temu przygotujemy definicje w CMS z wyprzedzeniem, a w dniu aktywacji zweryfikujemy dostępność i potwierdzimy to mailowo. Jeśli planujecie także pushe lub banery, dajcie proszę znać przy okazji – uwzględnimy je w planie prac.`};
+
+const clientOf=id=>CLIENTS.find(c=>c.id===id);
+const allTasks=()=>{
+  const out=[];
+  THREADS.forEach(th=>th.tasks.forEach(x=>out.push({...x,ref:x,client:th.client,thread:th.id,threadName:th.name})));
+  LOOSE.forEach(x=>out.push({...x,ref:x,thread:null}));
+  PAPER.forEach(x=>out.push({t:x.t,who:'Ja',due:x.due,p:2,done:x.done,ref:x,client:x.client,thread:x.project||null,paper:true}));
+  return out;
+};
+
+let state={view:'dzis',client:null,theme:'auto'};
+try{state.theme=localStorage.getItem('cd-theme')||'auto'}catch(e){}
+
+/* ---------- nav ---------- */
+function navBtn(id,label,cnt,hot,dot){
+  const cur=(state.view===id && !state.client)||(state.client===id);
+  return `<button class="nav" type="button" data-nav="${id}" aria-current="${cur}">${dot?`<span class="dot" style="background:${dot}"></span>`:''}<span>${label}</span>${cnt!=null?`<span class="cnt ${hot?'hot':''}">${cnt}</span>`:''}</button>`;
+}
+function renderNav(){
+  const t=allTasks().filter(x=>!x.done&&x.due);
+  const late=t.filter(x=>D(x.due)<TODAY).length, today=t.filter(x=>days(D(x.due),TODAY)===0).length;
+  document.getElementById('navMain').innerHTML=`<div class="navlabel">Pokład</div>`+navBtn('dzis','Dziś',late+today,late>0)+navBtn('czekamy','Czekamy na…',THREADS.filter(x=>x.waitSince).length);
+  document.getElementById('navClients').innerHTML=`<div class="navlabel">Klienci</div>`+CLIENTS.map(c=>navBtn(c.id,c.name,THREADS.filter(t=>t.client===c.id&&t.status!=='ok').length+PROJECTS.filter(p=>p.client===c.id).length,false,c.color)).join('');
+  document.getElementById('navTools').innerHTML=`<div class="navlabel">Narzędzia</div>`+navBtn('papier','Papierologia',PAPER.filter(p=>!p.done&&days(D(p.due),TODAY)<=14).length)+navBtn('booking','Booking')+navBtn('krystian','Lista dla Krystiana')+navBtn('terminy','Rejestr terminów')+navBtn('archiwum','Archiwum');
+}
+
+/* ---------- helpers ---------- */
+const pill=s=>`<span class="pill ${ST[s][1]}">${ST[s][0]}</span>`;
+const cchip=id=>{const c=clientOf(id);return `<span class="chip"><span class="dot" style="background:${c.color}"></span>${c.name}</span>`};
+const whenCls=d=>d&&D(d)<TODAY?'when late':'when';
+function taskRow(x,showClient=true){
+  const k=registerRef(x.ref);
+  return `<div class="row ${x.done?'done':''}">
+    <input class="chk" type="checkbox" id="c${k}" data-k="${k}" ${x.done?'checked':''} aria-label="Oznacz jako zrobione">
+    <div class="t"><label class="title" for="c${k}">${x.p?`<span class="prio p${x.p}" title="priorytet"></span> `:''}${esc(x.t)}</label>
+      <div class="meta">${showClient?cchip(x.client):''}${x.thread?`<button type="button" class="chip" data-open="${x.thread}">${esc(x.thread)}</button>`:''}${x.paper?'<span class="chip">papierologia</span>':''}${x.who&&x.who!=='Ja'?`<span class="who">→ ${esc(x.who)}</span>`:''}</div></div>
+    <span class="${whenCls(x.due)}">${x.due?fmtD(x.due):'bez daty'}</span></div>`;
+}
+const REFS=[];function registerRef(r){let i=REFS.indexOf(r);if(i<0){REFS.push(r);i=REFS.length-1}return i}
+
+/* ---------- views ---------- */
+function vDzis(){
+  const open=allTasks().filter(x=>!x.done);
+  const late=open.filter(x=>x.due&&D(x.due)<TODAY);
+  const tod=open.filter(x=>x.due&&days(D(x.due),TODAY)===0);
+  const endW=new Date(TODAY);endW.setDate(TODAY.getDate()+(7-((TODAY.getDay()+6)%7))-1);
+  const week=open.filter(x=>x.due&&D(x.due)>TODAY&&D(x.due)<=endW);
+  const next=open.filter(x=>x.due&&D(x.due)>endW&&days(D(x.due),TODAY)<=28);
+  const waits=THREADS.filter(t=>t.waitSince).sort((a,b)=>D(a.waitSince)-D(b.waitSince));
+  const lost=THREADS.filter(t=>t.status!=='ok'&&(!t.nextDate||days(TODAY,D(t.last.d))>=7));
+  const soon=TERMS.filter(t=>days(D(t.due),TODAY)<=45).sort((a,b)=>D(a.due)-D(b.due));
+  const grp=(label,arr,cls)=>`<div class="hzhead"><h2>${label} <span class="n">${arr.length}</span></h2><span class="bar"></span></div>${arr.length?arr.sort((a,b)=>(a.due||'').localeCompare(b.due||'')).map(x=>taskRow(x)).join(''):`<div class="who" style="padding:4px 10px">Czysto.</div>`}`;
+  return `<div class="eyebrow">Telemetria · ${['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'][TODAY.getDay()]} ${fmt(iso(TODAY))}.2026</div>
+  <h1>Dzień dobry, Wiktorio <span class="demo">makieta · dane z 21–27.10</span></h1>
+  <p class="sub">Wszystko, co wymaga uwagi, ze wszystkich klientów. Odhaczaj tutaj albo w karcie wątku.</p>
+  <div class="stats">
+    <div class="stat crit"><div class="v">${late.length}</div><div class="l">zaległe</div></div>
+    <div class="stat"><div class="v">${tod.length}</div><div class="l">na dziś</div></div>
+    <div class="stat wait"><div class="v">${waits.length}</div><div class="l">czekamy na kogoś</div></div>
+    <div class="stat warn"><div class="v">${lost.length}</div><div class="l">sygnał utracony</div></div>
+  </div>
+  <div class="grid2">
+    <section class="panel hz" aria-label="Plan lotu">
+      ${grp('Zaległe',late)}${grp('Dziś',tod)}${grp('Ten tydzień',week)}${grp('Następne 3 tygodnie',next)}
+    </section>
+    <div class="stack">
+      <section class="panel"><h2>Czekamy na… <span class="n">${waits.length}</span></h2>
+        ${waits.map(t=>{const n=days(TODAY,D(t.waitSince));const a=n>=7?'a3':n>=3?'a2':'a1';return `<div class="wait"><div><button class="linkish who2" type="button" data-open="${t.id}">${esc(t.waitWho)}</button></div><span class="age ${a}">${n} dni</span><div class="what">${esc(t.waitWhat)} · ${cchip(t.client)}</div></div>`}).join('')}
+      </section>
+      <section class="panel"><h2>Sygnał utracony <span class="n">${lost.length}</span></h2>
+        <p class="who" style="margin:4px 0 6px">Wątki bez następnego kroku z datą albo bez update'u od 7+ dni.</p>
+        ${lost.map(t=>`<div class="lost"><button class="linkish" type="button" data-open="${t.id}">${esc(t.name)}</button><span class="why">${!t.nextDate?'brak daty następnego kroku':'ostatni update '+days(TODAY,D(t.last.d))+' dni temu'}</span><span>${cchip(t.client)}</span></div>`).join('')}
+      </section>
+      <section class="panel"><h2>Na radarze · 45 dni</h2>
+        <div class="list">${soon.map(t=>`<div class="li"><span class="${days(D(t.due),TODAY)<=14?'when late':'when'}">${fmt(t.due)}</span><span class="x">${esc(t.t)}</span>${cchip(t.client)}</div>`).join('')}</div>
+      </section>
+    </div>
+  </div>`;
+}
+function threadCard(t){
+  const done=t.tasks.filter(x=>x.done).length,all=t.tasks.length;
+  return `<button class="card" type="button" data-open="${t.id}">
+    <div class="top"><span class="code">${t.id}${t.ref?' · '+esc(t.ref):''}</span>${pill(t.status)}</div>
+    <div class="name">${esc(t.name)}</div>
+    <dl class="kv"><dt>Piłka</dt><dd>${esc(t.ball)}</dd><dt>Dalej</dt><dd>${esc(t.next)}</dd></dl>
+    <div class="upd"><span class="d">Ostatni update · ${fmt(t.last.d)}</span>${esc(t.last.t)}</div>
+    <div class="foot"><span class="${whenCls(t.nextDate)}">${t.nextDate?'termin '+fmtD(t.nextDate):'brak terminu'}</span>${all?`<span class="prog"><i><b style="width:${Math.round(done/all*100)}%"></b></i>${done}/${all}</span>`:''}</div>
+  </button>`;
+}
+function vClient(id){
+  const c=clientOf(id);
+  const projs=PROJECTS.filter(p=>p.client===id);
+  const ths=THREADS.filter(t=>t.client===id&&!t.project&&t.status!=='ok');
+  const loose=LOOSE.filter(x=>x.client===id);
+  const paper=PAPER.filter(x=>x.client===id&&!x.project);
+  const kd=KEYDATES[id]||[];
+  const bk=BOOK.rows.filter(r=>r.what.toUpperCase().includes(c.name.toUpperCase())||(id==='CNK'&&r.who==='Krystian'));
+  if(!projs.length&&!ths.length&&!loose.length){
+    return `<div class="eyebrow">Klient</div><h1>${c.name}</h1><div class="facts">${c.facts.map(f=>`<span>${f[0]}: <b>${esc(f[1])}</b></span>`).join('')}</div>
+    <div class="empty"><p style="font-family:var(--f-hud);font-size:16px;margin:0 0 6px">Jeszcze nic na orbicie</p><p style="margin:0 0 14px">Dodaj pierwszy projekt albo wątek dla ${c.name}. Możesz też wkleić update z Claude — klient zostanie rozpoznany po kodzie.</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn primary" type="button" data-add="thread" data-client="${id}">＋ Nowy wątek</button><button class="btn" type="button" data-add="project" data-client="${id}">＋ Nowy projekt</button></div></div>`;
+  }
+  return `<div class="clienthead"><div><div class="eyebrow">Klient</div><h1>${c.name}</h1></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" data-add="project" data-client="${id}">＋ Projekt</button><button class="btn primary" type="button" data-add="thread" data-client="${id}">＋ Wątek</button></div></div>
+  <div class="facts">${c.facts.map(f=>`<span>${f[0]}: <b>${esc(f[1])}</b></span>`).join('')}</div>
+  ${kd.length?`<section class="panel" style="margin-bottom:18px"><h2>Kluczowe daty</h2><div class="tl">${kd.map(k=>`<div class="ev ${k[2]?'crit':''}"><div class="d">${fmtD(k[0])}</div><div class="x">${esc(k[1])}</div></div>`).join('')}</div></section>`:''}
+  ${projs.map(p=>{const inner=THREADS.filter(t=>t.project===p.id);return `<section class="project">
+    <div class="phead"><div><div class="ptag">Projekt · ${p.id} · ${esc(p.ref)}</div><button class="linkish pname" type="button" data-open="${p.id}">${esc(p.name)}</button></div>${pill(p.status)}</div>
+    <div class="pgrid">
+      <div class="mini"><div class="upd"><span class="d">Ostatni update · ${fmt(p.last.d)}</span>${esc(p.last.t)}</div>
+        <dl class="kv" style="margin-top:4px"><dt>Piłka</dt><dd>${esc(p.ball)}</dd><dt>Dalej</dt><dd>${esc(p.next)} · <span class="${whenCls(p.nextDate)}">${fmtD(p.nextDate)}</span></dd></dl></div>
+      <div class="mini"><h2 style="font-size:11.5px">Wątki w projekcie <span class="n">${inner.length}</span></h2>
+        ${inner.map(t=>`<button class="minirow" type="button" data-open="${t.id}"><span class="nm">${esc(t.name)}</span>${pill(t.status)}</button>`).join('')||'<span class="who">Brak — dodaj wątek w projekcie.</span>'}
+        <h2 style="font-size:11.5px;margin-top:8px">Papierologia projektu <span class="n">${p.paper.length}</span></h2>
+        ${p.paper.map(x=>`<div class="minirow"><span class="nm">${esc(x.t)}</span><span class="${whenCls(x.due)}">${fmt(x.due)}</span></div>`).join('')}
+      </div></div></section>`}).join('')}
+  <section class="section"><h2>Wątki <span class="n">${ths.length}</span></h2><div class="cards">${ths.map(threadCard).join('')}</div></section>
+  <div class="cols3 section">
+    <section class="panel"><h2>Luźne zadania <span class="n">${loose.length}</span></h2>${loose.map(x=>taskRow({...x,ref:x},false)).join('')||'<p class="who">Brak.</p>'}</section>
+    <section class="panel"><h2>Papierologia <span class="n">${paper.length}</span></h2><div class="list">${paper.map(x=>`<div class="li"><span class="${whenCls(x.due)}">${fmt(x.due)}</span><span class="x">${esc(x.t)}<br><span class="rule">${esc(x.rule)}</span></span></div>`).join('')||'<p class="who">Brak.</p>'}</div></section>
+    <section class="panel"><h2>Booking</h2><div class="list">${bk.map(r=>`<div class="li"><span class="x"><b>${esc(r.who)}</b><br><span class="who">${esc(r.what)}</span></span><span class="rule">${r.vals[0]} MD/tydz.</span></div>`).join('')||'<p class="who">Brak.</p>'}</div></section>
+  </div>`;
+}
+function vCzekamy(){
+  const w=THREADS.filter(t=>t.waitSince).sort((a,b)=>D(a.waitSince)-D(b.waitSince));
+  return `<div class="eyebrow">Orbita oczekująca</div><h1>Czekamy na…</h1><p class="sub">Najdłużej czekające na górze. Żółty od 3 dni, czerwony od 7 — wtedy warto się przypomnieć.</p>
+  <div class="tablewrap"><table><thead><tr><th>Od</th><th>Na kogo</th><th>W jakiej sprawie</th><th>Wątek</th><th>Klient</th></tr></thead><tbody>
+  ${w.map(t=>{const n=days(TODAY,D(t.waitSince));const a=n>=7?'a3':n>=3?'a2':'a1';return `<tr><td><span class="age ${a}">${n} dni</span></td><td><b>${esc(t.waitWho)}</b></td><td>${esc(t.waitWhat)}</td><td><button class="linkish" type="button" data-open="${t.id}">${esc(t.name)}</button></td><td>${cchip(t.client)}</td></tr>`}).join('')}
+  </tbody></table></div>`;
+}
+function fillTpl(s){
+  const M=['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
+  const n=new Date(TODAY.getFullYear(),TODAY.getMonth()+1,1);
+  return s.replaceAll('{KOLEJNY_MIESIĄC}',M[n.getMonth()]).replaceAll('{ROK}',n.getFullYear());
+}
+function vPapier(){
+  const rows=[...PAPER].sort((a,b)=>D(a.due)-D(b.due));
+  return `<div class="eyebrow">Papierologia</div><h1>Obowiązki cykliczne</h1><p class="sub">Odhaczasz — kolejne wystąpienie pojawia się samo. Weekendy i polskie święta przesuwają termin na poprzedni dzień roboczy. Przypomnienie przychodzi X dni wcześniej.</p>
+  <div class="grid2"><div class="tablewrap"><table><thead><tr><th></th><th>Termin</th><th>Obowiązek</th><th>Reguła</th><th>Klient</th></tr></thead><tbody>
+  ${rows.map(x=>{const k=registerRef(x);return `<tr><td><input class="chk" type="checkbox" data-k="${k}" ${x.done?'checked':''} aria-label="Zrobione"></td><td class="${whenCls(x.due)}">${fmtD(x.due)}</td><td>${esc(x.t)}${x.project?`<br><span class="rule">${x.project}</span>`:''}</td><td class="rule">${esc(x.rule)} · przypomnienie ${x.lead} d wcześniej</td><td>${cchip(x.client)}</td></tr>`}).join('')}
+  </tbody></table></div>
+  <section class="panel"><h2>Szablon maila</h2><p class="who" style="margin:6px 0 0">VITAY — materiały do kuponów i promocji · 20. każdego miesiąca. Miesiąc wpisuje się sam.</p>
+  <div class="tpl" id="tplOut">${esc(fillTpl(TPL.vitay))}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" data-copy="tplOut">Kopiuj treść</button><button class="btn" type="button" data-toast="W aplikacji: otwiera nowy mail w Outlooku z tematem i treścią">Otwórz w Outlooku</button></div></section></div>`;
+}
+function vBooking(){
+  return `<div class="eyebrow">Booking · spotkanie pn 12:00</div><h1>Zapotrzebowanie na ludzi</h1><p class="sub">MD na tydzień. Pozycje „do zgłoszenia” trzeba zarezerwować na najbliższym spotkaniu bookingowym.</p>
+  <div class="tablewrap"><table><thead><tr><th>Osoba</th><th>Projekt / powód</th>${BOOK.weeks.map(w=>`<th style="text-align:center">tydz. ${w}</th>`).join('')}<th>Status</th></tr></thead><tbody>
+  ${BOOK.rows.map(r=>`<tr><td><b>${esc(r.who)}</b></td><td>${esc(r.what)}</td>${r.vals.map(v=>`<td class="num ${v&&v!=='?'&&!r.fixed?'hi':''}">${v||'·'}</td>`).join('')}<td>${r.fixed?'<span class="pill s-zrobic">stały</span>':'<span class="pill s-zespol">do zgłoszenia</span>'}</td></tr>`).join('')}
+  </tbody></table></div>
+  <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" data-toast="Skopiowano podsumowanie bookingu na ten tydzień">Kopiuj podsumowanie na booking</button><button class="btn" type="button" data-toast="W aplikacji: formularz nowej pozycji bookingu">＋ Pozycja</button></div>`;
+}
+function krysText(){
+  const ks=allTasks().filter(x=>!x.done&&/krystian/i.test(x.who||''));
+  const d1=[],d2=[],d3=[];
+  ks.forEach(x=>{const n=x.due?days(D(x.due),TODAY):99; if(n<=0||x.p===1)d1.push(x); else if(n<=2||x.p===2)d2.push(x); else d3.push(x)});
+  const line=(x,i)=>{const th=THREADS.find(t=>t.id===x.thread);const rm=x.rm||'';return `${i+1}. ${clientOf(x.client).name} - ${x.t}${rm?` (${rm})`:''}${x.note?`\n${x.note}`:''}`};
+  return `Lista priorytetów\n\nDzisiaj:\n\n${d1.map(line).join('\n')||'—'}\n\nJutro/pojutrze:\n\n${d2.map(line).join('\n')||'—'}\n\nPrzyszły tydzień:\n\n${d3.map(line).join('\n')||'—'}`;
+}
+function vKrystian(){
+  return `<div class="eyebrow">Generator</div><h1>Lista dla Krystiana</h1><p class="sub">Składana automatycznie z zadań Krystiana u wszystkich klientów: zaległe i pilne → Dzisiaj, termin w 2 dni lub ważne → Jutro/pojutrze, reszta → Przyszły tydzień. Przed wysłaniem możesz poprawić tekst.</p>
+  <div class="grid2"><div><textarea class="krys" id="krysOut" style="min-height:420px" aria-label="Lista priorytetów">${esc(krysText())}</textarea>
+  <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" data-copy="krysOut">Kopiuj na Teams</button><button class="btn" type="button" data-toast="Lista wygenerowana na nowo">Odśwież</button></div></div>
+  <section class="panel"><h2>Ta sama lista dla…</h2><div class="list">${['Natalia','Patryk','Michał','Romeo','Zbyszek'].map(n=>`<div class="li"><span class="x">${n}</span><button class="btn ghost" type="button" data-toast="W aplikacji: lista dla ${n}">Generuj</button></div>`).join('')}</div></section></div>`;
+}
+function vTerminy(){
+  const r=[...TERMS].sort((a,b)=>D(a.due)-D(b.due));
+  return `<div class="eyebrow">Rejestr</div><h1>Terminy i certyfikaty</h1><p class="sub">Alerty 30, 14 i 7 dni przed. Po podmianie certu wpisujesz nową datę — kolejny cykl przypomnień ustawia się sam.</p>
+  <div class="tablewrap"><table><thead><tr><th>Data</th><th>Za</th><th>Co</th><th>Rodzaj</th><th>Klient</th></tr></thead><tbody>
+  ${r.map(t=>{const n=days(D(t.due),TODAY);const a=n<=14?'a3':n<=30?'a2':'a1';return `<tr><td class="when">${fmt(t.due)}.${D(t.due).getFullYear()}</td><td><span class="age ${a}">${n} dni</span></td><td>${esc(t.t)}</td><td>${t.kind}</td><td>${cchip(t.client)}</td></tr>`}).join('')}
+  </tbody></table></div>`;
+}
+function vArchiwum(){
+  const ev=[];[...PROJECTS,...THREADS].forEach(t=>t.arch.forEach(a=>ev.push({...a,id:t.id,name:t.name,client:t.client})));
+  ev.sort((a,b)=>b.d.localeCompare(a.d));
+  return `<div class="eyebrow">Czarna skrzynka</div><h1>Archiwum update'ów</h1><p class="sub">Gdy nowy update zastępuje poprzedni, stary trafia tutaj (i do osi czasu wątku). Zakończone wątki też lądują w archiwum — nic nie znika.</p>
+  <div class="panel"><div class="arch">${ev.map(e=>`<div class="e"><span class="d">${fmtD(e.d)} · ${e.id}</span><p><button class="linkish" type="button" data-open="${e.id}">${esc(e.name)}</button> — ${esc(e.t)}</p></div>`).join('')}</div></div>`;
+}
+
+/* ---------- drawer (wątek / projekt) ---------- */
+function findAny(id){return PROJECTS.find(p=>p.id===id)||THREADS.find(t=>t.id===id)}
+function openDrawer(id){
+  const t=findAny(id); if(!t) return;
+  const isP=!!PROJECTS.find(p=>p.id===id);
+  const inner=isP?THREADS.filter(x=>x.project===id):[];
+  const parent=t.project?PROJECTS.find(p=>p.id===t.project):null;
+  layer(`<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="${esc(t.name)}">
+    <button class="close" type="button" data-close aria-label="Zamknij">✕</button>
+    <div class="eyebrow">${isP?'Projekt':'Wątek'} · ${t.id}${parent?` · w projekcie ${esc(parent.name)}`:''}</div>
+    <h3>${esc(t.name)}</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${pill(t.status)} ${cchip(t.client)} ${t.ref?`<span class="chip">${esc(t.ref)}</span>`:''}</div>
+    <dl class="kv" style="margin-top:12px"><dt>Piłka</dt><dd>${esc(t.ball)}</dd><dt>Dalej</dt><dd>${esc(t.next)} · <span class="${whenCls(t.nextDate)}">${t.nextDate?fmtD(t.nextDate):'brak daty — ustaw!'}</span></dd>${t.waitSince?`<dt>Czekamy</dt><dd>${esc(t.waitWho)} od ${fmt(t.waitSince)} (${days(TODAY,D(t.waitSince))} dni)</dd>`:''}</dl>
+    <div class="dsec"><h2>Ostatnia aktualizacja</h2><div class="lastbox"><span class="d">${fmtD(t.last.d)}</span><p>${esc(t.last.t)}</p></div>
+      <form class="addupd" id="fUpd"><label class="who" for="updText">Dodaj update — poprzedni przejdzie do archiwum</label>
+        <textarea id="updText" placeholder="Np. Krystian przesłał wycenę BE, opis na tasku gotowy…" required></textarea>
+        <div class="formrow"><select id="updStatus" aria-label="Status">${Object.entries(ST).map(([k,v])=>`<option value="${k}" ${k===t.status?'selected':''}>${v[0]}</option>`).join('')}</select>
+        <input type="text" id="updNext" placeholder="Następny krok" value="${esc(t.next)}" aria-label="Następny krok"></div>
+        <div><button class="btn primary" type="submit">Zapisz update</button></div></form></div>
+    ${isP?`<div class="dsec"><h2>Wątki w projekcie <span class="n">${inner.length}</span></h2><div class="mini">${inner.map(x=>`<button class="minirow" type="button" data-open="${x.id}"><span class="nm">${esc(x.name)}</span>${pill(x.status)}</button>`).join('')}<button class="btn ghost" type="button" data-toast="W aplikacji: nowy wątek w projekcie ${esc(t.name)}">＋ Wątek w projekcie</button></div></div>
+      <div class="dsec"><h2>Papierologia projektu</h2><div class="list">${t.paper.map(x=>`<div class="li"><span class="${whenCls(x.due)}">${fmt(x.due)}</span><span class="x">${esc(x.t)}<br><span class="rule">${esc(x.rule)}</span></span></div>`).join('')}</div></div>`:''}
+    ${!isP?`<div class="dsec"><h2>Zadania <span class="n">${t.tasks.filter(x=>x.done).length}/${t.tasks.length}</span></h2>
+      <div>${t.tasks.map(x=>taskRow({...x,ref:x,client:t.client,thread:null},false)).join('')}</div>
+      <form class="formrow" id="fTask" style="margin-top:8px"><input type="text" id="newTask" placeholder="Nowe zadanie… (np. „podbić Filipa pt”)" aria-label="Nowe zadanie" required><button class="btn" type="submit" style="flex:0 0 auto">Dodaj</button></form></div>`:''}
+    ${t.links.length?`<div class="dsec"><h2>Linki</h2><div class="links">${t.links.map(l=>`<a href="${l[1]}" target="_blank" rel="noopener">${esc(l[0])} ↗</a>`).join('')}</div></div>`:''}
+    <div class="dsec"><details ${t.arch.length?'open':''}><summary class="sumbtn">▸ Archiwum update'ów (${t.arch.length})</summary>
+      <div class="arch" style="margin-top:12px">${t.arch.map(a=>`<div class="e"><span class="d">${fmtD(a.d)}</span><p>${esc(a.t)}</p></div>`).join('')||'<p class="who">Pusto — pojawi się tu każdy zastąpiony update.</p>'}</div></details></div>
+  </aside>`);
+  document.getElementById('fUpd').onsubmit=e=>{e.preventDefault();
+    const txt=document.getElementById('updText').value.trim(); if(!txt) return;
+    t.arch.unshift(t.last); t.last={d:iso(TODAY),t:txt}; t.status=document.getElementById('updStatus').value; t.next=document.getElementById('updNext').value||t.next;
+    refresh(); openDrawer(id); toast('Update zapisany · poprzedni w archiwum');};
+  const ft=document.getElementById('fTask'); if(ft) ft.onsubmit=e=>{e.preventDefault();const v=document.getElementById('newTask').value.trim();if(!v)return;t.tasks.push({t:v,who:'Ja',due:null,p:3,done:false});refresh();openDrawer(id);toast('Dodano zadanie')};
+}
+
+/* ---------- paste update ---------- */
+const SAMPLE=`📌 UPDATE — [INEA-KARIERA] Strona Kariera — 29.10.2026
+(…tekst dla Ciebie od Claude…)
+
+\`\`\`cd-update
+watek: INEA-KARIERA
+data: 2026-10-29
+status: W toku
+pilka: Ja — decyzja o wykonawcy FE
+nastepny_krok: Decyzja o wykonawcy FE + booking
+termin: 2026-10-30
+update: Krystian przesłał wycenę BE. Opis wyceny FE+BE dodany na tasku 93998 razem z akceptacją Janka z 27.10.
+zrobione: Wycena BE | Opis wyceny FE+BE na tasku
+nowe: Booking Niny na Karierę (styczeń) | Ja | 2026-11-09
+\`\`\``;
+const STMAP={'w toku':'toku','czekam na klienta':'klient','czekam na zespół':'zespol','do zrobienia':'zrobic','analiza':'analiza','wstrzymane':'wstrz','zakończone':'ok'};
+function parseUpd(s){
+  const m=s.match(/```cd-update([\s\S]*?)```/); const body=m?m[1]:s; const o={nowe:[]};
+  body.split('\n').forEach(l=>{const i=l.indexOf(':');if(i<0)return;const k=l.slice(0,i).trim().toLowerCase(),v=l.slice(i+1).trim();if(k==='nowe')o.nowe.push(v);else o[k]=v});
+  return o;
+}
+function openPaste(){
+  layer(`<div class="scrim" data-close></div><div class="modal"><div class="box" role="dialog" aria-modal="true" aria-label="Wklej update">
+    <div class="eyebrow">Odbiór transmisji</div><h3 style="font-family:var(--f-hud);font-size:20px;margin:4px 0 6px">Wklej update z Claude</h3>
+    <p class="who" style="margin:0 0 10px">W aplikacji wystarczy skopiować odpowiedź Claude — Centrum samo wykryje update w schowku. Tu wklejony jest przykład.</p>
+    <textarea id="pasteIn" style="min-height:200px;font-family:var(--f-mono);font-size:12px" aria-label="Treść update'u">${esc(SAMPLE)}</textarea>
+    <div style="margin-top:10px"><button class="btn" type="button" id="btnPrev">Pokaż zmiany</button></div>
+    <div id="diff"></div></div></div>`);
+  document.getElementById('btnPrev').onclick=()=>{
+    const o=parseUpd(document.getElementById('pasteIn').value); const t=findAny(o['watek']);
+    const box=document.getElementById('diff');
+    if(!t){box.innerHTML=`<p class="who" style="color:var(--crit)">Nie znaleziono wątku „${esc(o['watek']||'?')}”. Sprawdź kod albo utwórz nowy wątek.</p>`;return}
+    const done=(o.zrobione||'').split('|').map(s=>s.trim()).filter(Boolean);
+    const st=STMAP[(o.status||'').toLowerCase()];
+    box.innerHTML=`<h2 style="margin-top:14px">Plan zmian · ${esc(t.name)}</h2><div class="diff">
+      <div class="dl arc"><b>ARCHIWUM</b><span>Update z ${fmt(t.last.d)} → archiwum</span></div>
+      <div class="dl chg"><b>UPDATE</b><span>${esc(o.update||'')}</span></div>
+      ${st&&st!==t.status?`<div class="dl chg"><b>STATUS</b><span>${ST[t.status][0]} → ${ST[st][0]}</span></div>`:''}
+      ${o.pilka?`<div class="dl chg"><b>PIŁKA</b><span>${esc(o.pilka)}</span></div>`:''}
+      ${o['nastepny_krok']?`<div class="dl chg"><b>DALEJ</b><span>${esc(o['nastepny_krok'])}${o.termin?' · '+fmtD(o.termin):''}</span></div>`:''}
+      ${done.map(d=>`<div class="dl done"><b>ODHACZ</b><span>${esc(d)}</span></div>`).join('')}
+      ${o.nowe.map(n=>`<div class="dl add"><b>NOWE</b><span>${esc(n.split('|').map(s=>s.trim()).join(' · '))}</span></div>`).join('')}
+    </div><div style="display:flex;gap:8px"><button class="btn primary" type="button" id="btnApply">Zastosuj</button><button class="btn" type="button" data-close>Anuluj</button></div>`;
+    document.getElementById('btnApply').onclick=()=>{
+      t.arch.unshift(t.last); t.last={d:o.data||iso(TODAY),t:o.update||''};
+      if(st)t.status=st; if(o.pilka)t.ball=o.pilka; if(o['nastepny_krok'])t.next=o['nastepny_krok']; if(o.termin)t.nextDate=o.termin;
+      if(t.status!=='klient'&&t.status!=='zespol'){delete t.waitSince}
+      done.forEach(d=>{const x=t.tasks.find(k=>k.t.toLowerCase().startsWith(d.toLowerCase().slice(0,12)));if(x)x.done=true});
+      o.nowe.forEach(n=>{const [tt,who,due]=n.split('|').map(s=>s.trim());t.tasks.push({t:tt,who:who||'Ja',due:due||null,p:2,done:false})});
+      closeLayer(); refresh(); openDrawer(t.id); toast('Update zastosowany');
+    };
+  };
+}
+function openQuick(client){
+  layer(`<div class="scrim" data-close></div><div class="modal"><form class="box" id="fQuick" role="dialog" aria-modal="true" aria-label="Szybkie dodawanie">
+    <div class="eyebrow">Szybkie dodawanie · ⌘N z każdego miejsca na Macu</div>
+    <input type="text" id="qIn" style="font-size:17px;margin-top:10px" placeholder="np. INEA: podbić Filipa pt" value="${client?esc(clientOf(client).name)+': ':''}" aria-label="Co dodać">
+    <p class="who" style="margin:8px 0 12px">Klient i data rozpoznają się same. „#INEA-SSL” dopnie do wątku.</p>
+    <div class="formrow"><select id="qKind" aria-label="Rodzaj"><option>Zadanie</option><option>Nowy wątek</option><option>Nowy projekt</option><option>Termin / certyfikat</option><option>Booking</option><option>Obowiązek cykliczny</option></select><button class="btn primary" type="submit" style="flex:0 0 auto">Dodaj</button></div></form></div>`);
+  const i=document.getElementById('qIn');i.focus();i.setSelectionRange(i.value.length,i.value.length);
+  document.getElementById('fQuick').onsubmit=e=>{e.preventDefault();const v=i.value.trim();if(!v)return;
+    const kind=document.getElementById('qKind').value; const m=v.match(/^(\w+)\s*:\s*(.+)$/); const c=m&&CLIENTS.find(c=>c.name.toLowerCase()===m[1].toLowerCase()); const txt=m?m[2]:v; const cid=c?c.id:'INEA';
+    if(kind==='Nowy wątek'){const id=cid+'-'+(THREADS.length+1);THREADS.push({id,client:cid,name:txt,status:'zrobic',ball:'Ja',next:'Ustalić następny krok',nextDate:null,last:{d:iso(TODAY),t:'Wątek utworzony.'},arch:[],tasks:[],links:[]});closeLayer();state.client=cid;state.view='client';refresh();openDrawer(id)}
+    else if(kind==='Nowy projekt'){const id=cid+'-P'+(PROJECTS.length+1);PROJECTS.push({id,client:cid,name:txt,ref:'nowy',status:'zrobic',ball:'Ja',next:'Ustalić zakres',nextDate:null,last:{d:iso(TODAY),t:'Projekt utworzony.'},arch:[],links:[],paper:[],tasks:[]});closeLayer();state.client=cid;state.view='client';refresh()}
+    else {const pt=/\bpt\b/.test(txt)?'2026-10-30':/\bjutro\b/.test(txt)?'2026-10-29':null;LOOSE.push({client:cid,t:txt.replace(/\b(pt|jutro)\b/,'').trim(),who:'Ja',due:pt,p:2,done:false});closeLayer();refresh();toast('Dodano do '+clientOf(cid).name)}
+  };
+}
+function openSettings(){
+  layer(`<div class="scrim" data-close></div><div class="modal"><div class="box" role="dialog" aria-modal="true" aria-label="Ustawienia">
+    <div class="eyebrow">Ustawienia</div><h3 style="font-family:var(--f-hud);font-size:20px;margin:4px 0 12px">Powiadomienia i kalendarz</h3>
+    <div class="settings">
+      <label class="toggle"><input type="checkbox" checked id="s1"><span><b>Kalendarz macOS</b> — terminy w osobnym kalendarzu „Centrum Dowodzenia”<small>Zadania z datą, papierologia i rejestr terminów jako wydarzenia całodniowe z alertem. Synchronizują się przez iCloud na iPhone'a. Zmiana daty w aplikacji = zmiana w kalendarzu.</small></span></label>
+      <label class="toggle"><input type="checkbox" checked id="s2"><span><b>Poranny raport o 8:45</b><small>„3 zaległe, 4 na dziś, 2 wątki bez sygnału”.</small></span></label>
+      <label class="toggle"><input type="checkbox" checked id="s3"><span><b>Przypomnienia o terminach</b><small>Domyślnie 2 dni przed i w dniu terminu; dla certyfikatów 30/14/7 dni.</small></span></label>
+      <label class="toggle"><input type="checkbox" checked id="s4"><span><b>Sygnał utracony</b><small>Powiadom, gdy wątek nie ma update'u od 7 dni albo nie ma daty następnego kroku.</small></span></label>
+      <label class="toggle"><input type="checkbox" checked id="s5"><span><b>Uruchamiaj przy starcie Maca</b><small>Ikonka radaru na pasku menu z licznikiem na dziś.</small></span></label>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" id="btnNotif">Podgląd powiadomienia</button><button class="btn" type="button" data-close>Zamknij</button></div></div></div>`);
+  document.getElementById('btnNotif').onclick=()=>{closeLayer();notif('Centrum Dowodzenia · jutro','INEA · Mail do Filipa i Krzysztofa ws. certu SSL (wygasa 12.11)')};
+}
+
+/* ---------- plumbing ---------- */
+function layer(h){document.getElementById('layer').innerHTML=h}
+function closeLayer(){document.getElementById('layer').innerHTML=''}
+let tt;function toast(m){clearTimeout(tt);let el=document.querySelector('.toast');if(!el){el=document.createElement('div');el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}el.textContent=m;tt=setTimeout(()=>el.remove(),2600)}
+function notif(t,b){const el=document.createElement('div');el.className='notif';el.setAttribute('role','status');el.innerHTML=`<div class="ic"><svg width="20" height="20" viewBox="0 0 34 34"><circle cx="17" cy="17" r="14" fill="none" stroke="var(--accent-ink)" stroke-width="2"/><path d="M17 17 L17 3 A14 14 0 0 1 29 10 Z" fill="var(--accent-ink)" fill-opacity=".6"/></svg></div><div><div class="tt">${esc(t)}</div><div class="bd">${esc(b)}</div></div>`;document.body.appendChild(el);setTimeout(()=>el.remove(),5000)}
+function refresh(){
+  REFS.length=0; renderNav();
+  const v=document.getElementById('view');
+  v.innerHTML= state.client?vClient(state.client): ({dzis:vDzis,czekamy:vCzekamy,papier:vPapier,booking:vBooking,krystian:vKrystian,terminy:vTerminy,archiwum:vArchiwum}[state.view]||vDzis)();
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.th===state.theme));
+}
+function applyTheme(){const r=document.documentElement;if(state.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',state.theme)}
+document.addEventListener('click',e=>{
+  const n=e.target.closest('[data-nav]'); if(n){const id=n.dataset.nav; if(clientOf(id)){state.client=id;state.view='client'}else{state.client=null;state.view=id} closeLayer(); refresh(); window.scrollTo(0,0); return}
+  const o=e.target.closest('[data-open]'); if(o){e.preventDefault(); openDrawer(o.dataset.open); return}
+  if(e.target.closest('[data-close]')){closeLayer(); return}
+  const a=e.target.closest('[data-add]'); if(a){openQuick(a.dataset.client); setTimeout(()=>{const s=document.getElementById('qKind'); if(s) s.value=a.dataset.add==='project'?'Nowy projekt':'Nowy wątek'},0); return}
+  const c=e.target.closest('[data-copy]'); if(c){const el=document.getElementById(c.dataset.copy);const txt=el.value!==undefined&&el.tagName==='TEXTAREA'?el.value:el.textContent;
+    const ok=()=>toast('Skopiowano'); const fb=()=>{try{const r=document.createRange();if(el.select)el.select();else{r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r)}toast('Zaznaczono — naciśnij ⌘C')}catch(_){}};
+    try{navigator.clipboard.writeText(txt).then(ok,fb)}catch(_){fb()} return}
+  const t=e.target.closest('[data-toast]'); if(t){toast(t.dataset.toast); return}
+  const th=e.target.closest('[data-th]'); if(th){state.theme=th.dataset.th;try{localStorage.setItem('cd-theme',state.theme)}catch(_){}applyTheme();refresh();return}
+});
+document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.k; if(k!=null&&REFS[+k]){REFS[+k].done=e.target.checked; const open=document.querySelector('.drawer'); const id=open&&open.querySelector('.eyebrow').textContent.split('·')[1]; refresh(); if(open&&id) openDrawer(id.trim()); if(e.target.checked) toast('Zrobione ✓')}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closeLayer();
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('q').focus()}
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='n'){e.preventDefault();openQuick()}
+});
+document.getElementById('q').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const q=e.target.value.toLowerCase().trim();if(!q)return;const hit=[...PROJECTS,...THREADS].find(t=>(t.id+' '+t.name+' '+(t.ref||'')+' '+t.ball).toLowerCase().includes(q));if(hit)openDrawer(hit.id);else toast('Brak wyników dla „'+e.target.value+'”')});
+document.getElementById('btnPaste').onclick=openPaste;
+document.getElementById('btnQuick').onclick=()=>openQuick();
+document.getElementById('btnSettings').onclick=openSettings;
+applyTheme(); refresh();
+setTimeout(()=>notif('Centrum Dowodzenia · 8:45','3 zaległe · 6 na dziś · 4 wątki bez sygnału'),900);
+})();
+</script>
